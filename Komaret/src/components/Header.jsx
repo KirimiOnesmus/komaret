@@ -1,14 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { IoMenu } from "react-icons/io5";
+import { IoMenu, IoClose, IoChevronDown } from "react-icons/io5";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [activeLink, setActiveLink] = useState("/");
   const dropdownRef = useRef(null);
-  const active = location.pathname;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -20,141 +17,220 @@ const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // ✅ Close menus on route change
-  useEffect(() => {
+  const handleNavigation = (path) => {
+    setActiveLink(path);
     setIsOpen(false);
     setServicesOpen(false);
-  }, [location]);
-
-  const handleNavigation = (path) => {
-    navigate(path);
   };
 
   return (
-    <header className="flex justify-between items-center px-4 py-5 bg-white/70 backdrop-blur-md border-b border-gray-200 font-semibold text-lg relative z-50">
-    
-      <h1
-        onClick={() => handleNavigation("/")}
-        className="text-2xl cursor-pointer text-blue-600 font-bold hover:scale-105 transition-transform"
-      >
-        Komaret
-      </h1>
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-4">
+          
+          {/* Logo */}
+          <div
+            onClick={() => handleNavigation("/")}
+            className="flex items-center gap-2 cursor-pointer group"
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-105">
+              <span className="text-yellow-400 font-bold text-xl">K</span>
+            </div>
+            <h1 className="text-2xl font-bold text-blue-700 group-hover:text-blue-600 transition-colors">
+              Komaret
+            </h1>
+          </div>
 
-  
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden text-3xl text-gray-700 hover:text-blue-500 transition"
-      >
-        <IoMenu />
-      </button>
-
-      <nav
-        className={`absolute md:static top-16 left-0 w-full md:w-auto bg-white md:bg-transparent shadow-md md:shadow-none transition-all duration-300 ease-in-out transform md:transform-none ${
-          isOpen
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 -translate-y-5 md:opacity-100 md:translate-y-0 hidden md:block"
-        }`}
-      >
-        <ul className="flex flex-col md:flex-row md:items-center md:gap-6 px-4 md:px-0 py-4 md:py-0">
-          <li>
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-8">
             <button
               onClick={() => handleNavigation("/")}
-              className={`cursor-pointer transition-colors duration-200 ${
-                active === "/"
-                  ? "text-blue-600"
-                  : "text-gray-800 hover:text-blue-500"
+              className={`font-semibold transition-all duration-200 ${
+                activeLink === "/"
+                  ? "text-blue-600 border-b-2 border-yellow-400 pb-1"
+                  : "text-gray-700 hover:text-blue-600"
               }`}
             >
               Home
             </button>
-          </li>
 
-          <li>
             <button
               onClick={() => handleNavigation("/about")}
-              className={`cursor-pointer transition-colors duration-200 ${
-                active === "/about"
-                  ? "text-blue-600"
-                  : "text-gray-800 hover:text-blue-500"
+              className={`font-semibold transition-all duration-200 ${
+                activeLink === "/about"
+                  ? "text-blue-600 border-b-2 border-yellow-400 pb-1"
+                  : "text-gray-700 hover:text-blue-600"
               }`}
             >
               About Us
             </button>
-          </li>
 
-          {/* Services Dropdown */}
-          <li className="relative" ref={dropdownRef}>
-            <button
-              onClick={() => setServicesOpen(!servicesOpen)}
-              className={`cursor-pointer transition-colors duration-200 ${
-                active.startsWith("/services")
-                  ? "text-blue-600"
-                  : "text-gray-800 hover:text-blue-500"
-              }`}
-            >
-              Services
-            </button>
+            {/* Services Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setServicesOpen(!servicesOpen)}
+                className={`flex items-center gap-1 font-semibold transition-all duration-200 ${
+                  activeLink.startsWith("/services")
+                    ? "text-blue-600 border-b-2 border-yellow-400 pb-1"
+                    : "text-gray-700 hover:text-blue-600"
+                }`}
+              >
+                Services
+                <IoChevronDown
+                  size={18}
+                  className={`transition-transform duration-300 ${
+                    servicesOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            <ul
-              className={`absolute left-0 mt-2 w-56 bg-white shadow-lg rounded-lg overflow-hidden transform transition-all duration-300 ease-in-out origin-top ${
-                servicesOpen
-                  ? "opacity-100 scale-100 translate-y-0"
-                  : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-              }`}
-            >
-              {[
-                { label: "Designs", path: "/services/designs" },
-                { label: "House Construction", path: "/services/construction" },
-                {
-                  label: "Project Management",
-                  path: "/services/project-management",
-                },
-                {
-                  label: "Machine Rental Services",
-                  path: "/services/rental-services",
-                },
-              ].map((item) => (
-                <li key={item.path}>
-                  <button
-                    onClick={() => handleNavigation(item.path)}
-                    className={`block w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-100 hover:font-semibold transition-colors duration-200 ${
-                      active === item.path ? "bg-blue-50 font-semibold" : ""
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </li>
+              {servicesOpen && (
+                <div className="absolute left-0 mt-3 w-64 bg-white rounded-lg shadow-xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  {[
+                    { label: "Building & Construction", path: "/services/construction" },
+                    { label: "Renovations", path: "/services/renovations" },
+                    { label: "Architectural Design", path: "/services/design" },
+                    { label: "Project Management", path: "/services/management" },
+                    { label: "Landscaping", path: "/services/landscaping" },
+                    { label: "Equipment Rental", path: "/services/equipment" },
+                  ].map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => handleNavigation(item.path)}
+                      className={`block w-full text-left px-5 py-3 transition-all duration-200 ${
+                        activeLink === item.path
+                          ? "bg-blue-50 text-blue-700 font-semibold border-l-4 border-yellow-400"
+                          : "text-gray-700 hover:bg-gray-50 hover:text-blue-600 border-l-4 border-transparent"
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          <li>
             <button
               onClick={() => handleNavigation("/projects")}
-              className={`cursor-pointer transition-colors duration-200 ${
-                active === "/projects"
-                  ? "text-blue-600"
-                  : "text-gray-800 hover:text-blue-500"
+              className={`font-semibold transition-all duration-200 ${
+                activeLink === "/projects"
+                  ? "text-blue-600 border-b-2 border-yellow-400 pb-1"
+                  : "text-gray-700 hover:text-blue-600"
               }`}
             >
               Projects
             </button>
-          </li>
 
-          <li>
             <button
               onClick={() => handleNavigation("/contact")}
-              className={`cursor-pointer transition-colors duration-200 ${
-                active === "/contact"
-                  ? "text-blue-600"
-                  : "text-gray-800 hover:text-blue-500"
-              }`}
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105"
             >
-              Contact Us
+              Get a Quote
             </button>
-          </li>
-        </ul>
-      </nav>
+          </nav>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {isOpen ? <IoClose size={28} /> : <IoMenu size={28} />}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <nav className="lg:hidden pb-4 border-t border-gray-200 mt-2 animate-in slide-in-from-top duration-300">
+            <div className="flex flex-col gap-1 pt-4">
+              <button
+                onClick={() => handleNavigation("/")}
+                className={`text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                  activeLink === "/"
+                    ? "bg-blue-50 text-blue-700 border-l-4 border-yellow-400"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Home
+              </button>
+
+              <button
+                onClick={() => handleNavigation("/about")}
+                className={`text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                  activeLink === "/about"
+                    ? "bg-blue-50 text-blue-700 border-l-4 border-yellow-400"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                About Us
+              </button>
+
+              {/* Mobile Services */}
+              <div>
+                <button
+                  onClick={() => setServicesOpen(!servicesOpen)}
+                  className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all flex items-center justify-between ${
+                    activeLink.startsWith("/services")
+                      ? "bg-blue-50 text-blue-700 border-l-4 border-yellow-400"
+                      : "text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  Services
+                  <IoChevronDown
+                    size={18}
+                    className={`transition-transform duration-300 ${
+                      servicesOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {servicesOpen && (
+                  <div className="ml-4 mt-1 space-y-1">
+                    {[
+                      { label: "Building & Construction", path: "/services/construction" },
+                      { label: "Renovations", path: "/services/renovations" },
+                      { label: "Architectural Design", path: "/services/design" },
+                      { label: "Project Management", path: "/services/management" },
+                      { label: "Landscaping", path: "/services/landscaping" },
+                      { label: "Equipment Rental", path: "/services/equipment" },
+                    ].map((item) => (
+                      <button
+                        key={item.path}
+                        onClick={() => handleNavigation(item.path)}
+                        className={`block w-full text-left px-4 py-2.5 rounded-lg text-sm transition-all ${
+                          activeLink === item.path
+                            ? "bg-blue-100 text-blue-700 font-medium"
+                            : "text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => handleNavigation("/projects")}
+                className={`text-left px-4 py-3 rounded-lg font-semibold transition-all ${
+                  activeLink === "/projects"
+                    ? "bg-blue-50 text-blue-700 border-l-4 border-yellow-400"
+                    : "text-gray-700 hover:bg-gray-50"
+                }`}
+              >
+                Projects
+              </button>
+
+              <button
+                onClick={() => handleNavigation("/contact")}
+                className="mx-4 mt-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all"
+              >
+                Get a Quote
+              </button>
+            </div>
+          </nav>
+        )}
+      </div>
     </header>
   );
 };
