@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoMenu, IoClose, IoChevronDown } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [activeLink, setActiveLink] = useState("/");
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -18,6 +20,7 @@ const Header = () => {
   }, []);
 
   const handleNavigation = (path) => {
+     navigate(path);
     setActiveLink(path);
     setIsOpen(false);
     setServicesOpen(false);
@@ -55,9 +58,9 @@ const Header = () => {
             </button>
 
             <button
-              onClick={() => handleNavigation("/about")}
+              onClick={() => handleNavigation("/about-us")}
               className={`font-semibold transition-all duration-200 ${
-                activeLink === "/about"
+                activeLink === "/about-us"
                   ? "text-blue-600 border-b-2 border-yellow-400 pb-1"
                   : "text-gray-700 hover:text-blue-600"
               }`}
@@ -155,9 +158,9 @@ const Header = () => {
               </button>
 
               <button
-                onClick={() => handleNavigation("/about")}
+                onClick={() => handleNavigation("/about-us")}
                 className={`text-left px-4 py-3 rounded-lg font-semibold transition-all ${
-                  activeLink === "/about"
+                  activeLink === "/about-us"
                     ? "bg-blue-50 text-blue-700 border-l-4 border-yellow-400"
                     : "text-gray-700 hover:bg-gray-50"
                 }`}

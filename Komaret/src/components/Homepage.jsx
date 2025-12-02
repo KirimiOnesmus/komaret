@@ -191,23 +191,158 @@ const Homepage = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-blue-800">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Start Your Project?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8">
-            Get a free consultation and quote today. Let's build something amazing together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-yellow-400 text-gray-900 font-bold rounded-lg shadow-xl hover:bg-yellow-300 transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
-              <IoCall size={24} />
-              Call Us Now
-            </button>
-            <button className="px-8 py-4 bg-green-500 text-white font-bold rounded-lg shadow-xl hover:bg-green-600 transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2">
-              <IoLogoWhatsapp size={24} />
-              WhatsApp Us
-            </button>
+    <section className="py-20 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Get Your Free Quote Today
+            </h2>
+            <p className="text-xl text-blue-100">
+              Fill out the form below and our team will get back to you within 24 hours
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Contact Form */}
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              <form className="space-y-6">
+                
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none transition-colors"
+                      placeholder="Brian Koome"
+                    />
+                  </div>
+                
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none transition-colors"
+                    placeholder="briankoome@gmail.com"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Phone Number *
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none transition-colors"
+                    placeholder="+254 712 345 678"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Service Interested In *
+                  </label>
+                  <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none transition-colors">
+                    <option value="">Select a service</option>
+                    <option value="construction">Building & Construction</option>
+                    <option value="renovation">Renovations</option>
+                    <option value="design">Architectural Design</option>
+                    <option value="management">Project Management</option>
+                    <option value="landscaping">Landscaping</option>
+                    <option value="equipment">Equipment Rental</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Project Details *
+                  </label>
+                  <textarea
+                    required
+                    rows="4"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-600 focus:outline-none transition-colors resize-none"
+                    placeholder="Tell us about your project requirements..."
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-lg shadow-xl hover:shadow-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:scale-105"
+                >
+                  Submit Request
+                </button>
+              </form>
+            </div>
+
+            {/* Contact Info & Quick Links */}
+            <div className="space-y-6">
+              {/* Contact Information Card */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+                <h3 className="text-2xl font-bold text-white mb-6">Contact Information</h3>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4 text-white">
+                    <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <IoCall size={24} className="text-gray-900" />
+                    </div>
+                    <div>
+                      <p className="font-semibold mb-1">Phone</p>
+                      <p className="text-blue-100">+254 XXX XXX XXX</p>
+                      <p className="text-blue-100">Available 24/7</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 text-white">
+                    <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <IoLogoWhatsapp size={24} className="text-gray-900" />
+                    </div>
+                    <div>
+                      <p className="font-semibold mb-1">WhatsApp</p>
+                      <p className="text-blue-100">Quick response guaranteed</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-4 text-white">
+                    <div className="w-12 h-12 bg-yellow-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <IoHome size={24} className="text-gray-900" />
+                    </div>
+                    <div>
+                      <p className="font-semibold mb-1">Office</p>
+                      <p className="text-blue-100">Githongo, Meru County</p>
+                      <p className="text-blue-100">Kenya</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Why Choose Us Card */}
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+                <h3 className="text-2xl font-bold text-white mb-6">Why Choose Komaret?</h3>
+                <ul className="space-y-3 text-white">
+                  <li className="flex items-center gap-3">
+                    <IoCheckmarkCircle className="text-yellow-400 flex-shrink-0" size={24} />
+                    <span>Free site visit & consultation</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <IoCheckmarkCircle className="text-yellow-400 flex-shrink-0" size={24} />
+                    <span>Detailed quotation within 48 hours</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <IoCheckmarkCircle className="text-yellow-400 flex-shrink-0" size={24} />
+                    <span>Licensed & certified professionals</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <IoCheckmarkCircle className="text-yellow-400 flex-shrink-0" size={24} />
+                    <span>Quality materials & workmanship</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
       </section>
