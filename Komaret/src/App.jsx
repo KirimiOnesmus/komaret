@@ -1,5 +1,5 @@
 import {  Routes, Route, BrowserRouter } from 'react-router-dom'
-import { Home,About } from './pages'
+import { Home,About,ProjectPage,Contact } from './pages'
 import './App.css'
 
 
@@ -12,6 +12,8 @@ function App() {
         <Routes>
           <Route path='/' element={<Home/>} />
           <Route path ='/about-us' element={<About/>}/>
+          <Route path ="/projects" element={<ProjectPage/>}/>
+          <Route path ="/contact" element={<Contact/>}/>
         </Routes>
 
       </BrowserRouter>

@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { IoMenu, IoClose, IoChevronDown } from "react-icons/io5";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState("/");
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Use the current pathname as the active link
+  const activeLink = location.pathname;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -20,8 +23,7 @@ const Header = () => {
   }, []);
 
   const handleNavigation = (path) => {
-     navigate(path);
-    setActiveLink(path);
+    navigate(path);
     setIsOpen(false);
     setServicesOpen(false);
   };
