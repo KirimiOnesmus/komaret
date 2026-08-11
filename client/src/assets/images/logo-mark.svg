@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 178 178" width="178" height="178" role="img" aria-label="Komaret"><g transform="translate(14 14)">
+    <g fill="none" stroke="#071525" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M34 116 V70 L55 49 L76 70 V116"/>
+      <path d="M74 116 V54 L98 30 L122 54 V116"/>
+    </g>
+    <!-- gold spark -->
+    <g stroke="#F5B400" stroke-width="3.4" stroke-linecap="round">
+      <path d="M44 40 V52 M38 46 H50"/>
+    </g>
+    <!-- front house: separator halo, navy body+roof, gold window -->
+    <path d="M75 55 L49 78 V119 H101 V78 Z" fill="#FFFFFF"/>
+    <path d="M75 60 L54 79 V116 H96 V79 Z" fill="#071525"/>
+    <path d="M75 55 L50 78 H100 Z" fill="#071525"/>
+    <g fill="#F5B400">
+      <rect x="65" y="88" width="9.5" height="10" rx="1"/>
+      <rect x="76" y="88" width="9.5" height="10" rx="1"/>
+      <rect x="65" y="100" width="9.5" height="10" rx="1"/>
+      <rect x="76" y="100" width="9.5" height="10" rx="1"/>
+    </g></g></svg>

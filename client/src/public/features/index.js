@@ -1,0 +1,6 @@
+export{ default as ContactForm  } from "./contact/ContactForm"
+export {default as HomeSlider} from "./home/HomeSlider"
+export {default as NewsCard} from "./news/NewsCard"
+export{default as ProjectCard} from "./projects/ProjectCard"
+export {default as ServiceCard} from "./services/ServiceCard"
+export{default as Testimonials} from "./home/Testimonials"
