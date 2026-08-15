@@ -41,7 +41,7 @@ const NAV_GROUPS = [
     heading: 'Operations',
     items: [
       { label: 'Communications', to: ADMIN_PATHS.COMMUNICATIONS, icon: FaComments },
-      { label: 'Payments', to: ADMIN_PATHS.PAYMENT, icon: FaMoneyBillWaveAlt  },
+      { label: 'Payments', to: ADMIN_PATHS.PAYMENTS, icon: FaMoneyBillWaveAlt  },
       { label: 'Reports', to: ADMIN_PATHS.REPORTS, icon: FaChartBar },
       { label: 'Settings', to: ADMIN_PATHS.SETTINGS, icon: FaCog },
     ],

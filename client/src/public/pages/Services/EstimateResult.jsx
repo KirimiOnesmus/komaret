@@ -1,596 +1,292 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
-import {
-  FaCalculator,
-  FaRulerCombined,
-  FaCheckCircle,
-  FaArrowRight,
-  FaHardHat,
-  FaPalette,
-  FaTools,
-  FaTruck,
-} from 'react-icons/fa';
+import { FaCalculator, FaCheckCircle, FaArrowRight } from 'react-icons/fa';
 
-import Input from '../../../shared/components/common/Input';
-import Select from '../../../shared/components/common/Select';
-import Button from '../../../shared/components/common/Button';
+import Loading from '../../../shared/components/common/Loading';
 import useServiceRequest from '../../../shared/hooks/useServiceRequest';
+import useServices from '../../../shared/hooks/useServices';
+import { getCategoryIcon } from '../../features/services/categoryIcons';
 import { formatCurrency } from '../../../shared/utils/formatters';
 import { PUBLIC_PATHS } from '../../../shared/constants/routes';
 
-
-
-const SERVICE_CONFIG = {
-  'general-construction': {
-    title: 'General Construction',
-    description:
-      'Get a preliminary estimate for your construction project based on project size and finish level.',
-    icon: FaHardHat,
-    unitLabel: 'Approximate project size',
-    unitPlaceholder: 'e.g. 250',
-    unitSuffix: 'm²',
-    scopeLabel: 'Construction finish',
-    scopes: [
-      { value: 'basic', label: 'Basic / standard finish' },
-      { value: 'standard', label: 'Mid-range finish' },
-      { value: 'premium', label: 'Premium / high-end finish' },
-    ],
-  },
-
-  'interior-design': {
-    title: 'Interior Design',
-    description:
-      'Get a preliminary estimate for your interior design project based on the space and design level.',
-    icon: FaPalette,
-    unitLabel: 'Approximate space',
-    unitPlaceholder: 'e.g. 120',
-    unitSuffix: 'm²',
-    scopeLabel: 'Design level',
-    scopes: [
-      { value: 'basic', label: 'Basic interior package' },
-      { value: 'standard', label: 'Standard interior package' },
-      { value: 'premium', label: 'Premium interior package' },
-    ],
-  },
-
-  renovation: {
-    title: 'Renovation',
-    description:
-      'Tell us the approximate size of the area you want to renovate and the level of renovation required.',
-    icon: FaTools,
-    unitLabel: 'Approximate renovation area',
-    unitPlaceholder: 'e.g. 100',
-    unitSuffix: 'm²',
-    scopeLabel: 'Renovation scope',
-    scopes: [
-      { value: 'basic', label: 'Minor renovation' },
-      { value: 'standard', label: 'Standard renovation' },
-      { value: 'premium', label: 'Major / premium renovation' },
-    ],
-  },
-
-  'machinery-hire': {
-    title: 'Machinery Hire',
-    description:
-      'Get a preliminary estimate based on the machinery requirement and expected usage.',
-    icon: FaTruck,
-    unitLabel: 'Duration',
-    unitPlaceholder: 'e.g. 5',
-    unitSuffix: 'days',
-    scopeLabel: 'Equipment requirement',
-    scopes: [
-      { value: 'basic', label: 'Standard equipment' },
-      { value: 'standard', label: 'Heavy equipment' },
-      { value: 'premium', label: 'Specialized equipment' },
-    ],
-  },
-};
-
-
-
+/**
+ * Rate-card-driven instant estimate. Each service exposes an active rate card
+ * (label / unit / unitPrice / minQty / defaultQty); we render one quantity
+ * input per rate line and POST { serviceId, items:[{rateId, quantity}] } to the
+ * estimate API, which returns a priced breakdown + an indicative low–high band.
+ */
 function EstimateResult() {
   const { slug } = useParams();
   const location = useLocation();
 
-  const {
-    requestEstimate,
-    estimating,
-    error,
-  } = useServiceRequest();
+  const { data: service, loading: serviceLoading } = useServices({ slug });
+  const { requestEstimate, estimating, error } = useServiceRequest();
 
-  const service = SERVICE_CONFIG[slug] || {
-    title: 'Project Service',
-    description:
-      'Provide some details about your project to receive a preliminary estimate.',
-    icon: FaCalculator,
-    unitLabel: 'Approximate size',
-    unitPlaceholder: 'e.g. 100',
-    unitSuffix: 'm²',
-    scopeLabel: 'Project level',
-    scopes: [
-      { value: 'basic', label: 'Basic' },
-      { value: 'standard', label: 'Standard' },
-      { value: 'premium', label: 'Premium' },
-    ],
-  };
+  const rates = useMemo(() => service?.rates || [], [service]);
+  const canEstimate = Boolean(service?.supports?.estimate) && rates.length > 0;
 
-  const ServiceIcon = service.icon;
+  const Icon = getCategoryIcon(service?.category?.slug) || FaCalculator;
 
-  const [estimate, setEstimate] = useState(
-    location.state?.estimate ?? null
-  );
+  const [quantities, setQuantities] = useState({});
+  const [estimate, setEstimate] = useState(location.state?.estimate ?? null);
+  const [formError, setFormError] = useState(null);
 
-  const [values, setValues] = useState({
-    size: '',
-    scope: 'standard',
-    notes: '',
-  });
+  // Seed each quantity with the rate's defaultQty once the service loads.
+  useEffect(() => {
+    if (rates.length === 0) return;
+    setQuantities((prev) => {
+      if (Object.keys(prev).length > 0) return prev;
+      const seed = {};
+      for (const r of rates) seed[r.id] = r.defaultQty != null ? String(r.defaultQty) : '';
+      return seed;
+    });
+  }, [rates]);
 
-  const handleChange = (field) => (e) => {
-    setValues((current) => ({
-      ...current,
-      [field]: e.target.value,
-    }));
-  };
+  const setQty = (rateId) => (e) =>
+    setQuantities((q) => ({ ...q, [rateId]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError(null);
 
-    const data = await requestEstimate({
+    const items = rates
+      .map((r) => ({ rateId: r.id, quantity: Number(quantities[r.id]) || 0 }))
+      .filter((i) => i.quantity > 0);
 
-      serviceSlug: slug,
-
-      size: values.size
-        ? Number(values.size)
-        : undefined,
-
-      scope: values.scope,
-
-      notes: values.notes,
-    }).catch(() => null);
-
-    if (data) {
-      setEstimate(data);
+    if (items.length === 0) {
+      setFormError('Enter a quantity for at least one item to calculate an estimate.');
+      return;
     }
+
+    const data = await requestEstimate({ serviceId: service.id, items }).catch(() => null);
+    if (data) setEstimate(data);
   };
 
-
-
-
-  if (estimate) {
+  if (serviceLoading) {
     return (
-      <div className="bg-white">
-
-        <section className="relative overflow-hidden bg-[#071525]">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#071525] via-[#071525]/95 to-[#071525]/80" />
-
-          <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <Link
-                to={PUBLIC_PATHS.HOME}
-                className="hover:text-[#f5b400]"
-              >
-                Home
-              </Link>
-
-              <span>›</span>
-
-              <Link
-                to={`/services/${encodeURIComponent(slug)}`}
-                className="hover:text-[#f5b400]"
-              >
-                {service.title}
-              </Link>
-
-              <span>›</span>
-
-              <span className="text-white">
-                Estimate
-              </span>
-            </div>
-
-            <div className="mt-7 flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#f5b400] text-[#071525]">
-                <ServiceIcon className="text-2xl" />
-              </div>
-
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">
-                  Your Estimate
-                </p>
-
-                <h1 className="mt-1 text-3xl font-bold text-white sm:text-4xl">
-                  {service.title}
-                </h1>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-
-
-        <section className="py-16 sm:py-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-
-            <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm sm:p-12">
-
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
-                <FaCheckCircle className="text-3xl" />
-              </div>
-
-              <p className="mt-6 text-sm font-medium text-gray-500">
-                Preliminary estimate for
-              </p>
-
-              <h2 className="mt-1 text-2xl font-bold text-[#071525]">
-                {service.title}
-              </h2>
-
-              <div className="mt-8 rounded-lg bg-[#071525] px-6 py-8">
-                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400">
-                  Estimated Project Cost
-                </p>
-
-                <p className="mt-3 text-4xl font-bold text-[#f5b400] sm:text-5xl">
-                  {formatCurrency(estimate.amount)}
-                </p>
-
-                <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-gray-400">
-                  This is a preliminary estimate based on the information
-                  provided. The final price may change after our team reviews
-                  your project requirements.
-                </p>
-              </div>
-
-              <div className="mt-8 grid gap-4 text-left sm:grid-cols-3">
-
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-xs text-gray-500">
-                    Service
-                  </p>
-
-                  <p className="mt-1 font-semibold text-[#071525]">
-                    {service.title}
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-xs text-gray-500">
-                    Project size
-                  </p>
-
-                  <p className="mt-1 font-semibold text-[#071525]">
-                    {values.size
-                      ? `${values.size} ${service.unitSuffix}`
-                      : 'Not specified'}
-                  </p>
-                </div>
-
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <p className="text-xs text-gray-500">
-                    Project level
-                  </p>
-
-                  <p className="mt-1 font-semibold capitalize text-[#071525]">
-                    {values.scope}
-                  </p>
-                </div>
-
-              </div>
-
-
-              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-
-                <button
-                  type="button"
-                  onClick={() => setEstimate(null)}
-                  className="rounded-md border border-gray-300 px-6 py-3 text-sm font-semibold text-[#071525] transition hover:bg-gray-50"
-                >
-                  Adjust Estimate
-                </button>
-
-                <Link
-                  to={`/services/${encodeURIComponent(slug)}/request`}
-                >
-                  <button
-                    type="button"
-                    className="flex w-full items-center justify-center gap-2 rounded-md bg-[#f5b400] px-6 py-3 text-sm font-bold text-[#071525] transition hover:bg-[#dca200] sm:w-auto"
-                  >
-                    Request Full Quote
-                    <FaArrowRight />
-                  </button>
-                </Link>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <Loading label="Loading estimate…" />
       </div>
     );
   }
 
+  const serviceName = service?.name || 'Service';
 
+  const Hero = ({ crumb }) => (
+    <section className="relative overflow-hidden bg-[#071525]">
+      <div className="absolute inset-0 bg-gradient-to-r from-[#071525] via-[#071525]/95 to-[#071525]/80" />
+      <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2 text-xs text-gray-400">
+          <Link to={PUBLIC_PATHS.HOME} className="hover:text-[#f5b400]">Home</Link>
+          <span>›</span>
+          <Link to={`/services/${encodeURIComponent(slug)}`} className="hover:text-[#f5b400]">{serviceName}</Link>
+          <span>›</span>
+          <span className="text-white">{crumb}</span>
+        </div>
+        <div className="mt-7 flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[#f5b400] text-[#071525]">
+            <Icon className="text-2xl" />
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">Instant Estimate</p>
+            <h1 className="mt-1 text-3xl font-bold text-white sm:text-4xl">{serviceName}</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 
+  // Service can't be estimated (no rate card / estimate disabled).
+  if (!canEstimate) {
+    return (
+      <div className="bg-white">
+        <Hero crumb="Estimate" />
+        <section className="py-16 sm:py-20">
+          <div className="mx-auto max-w-2xl px-4 text-center sm:px-6 lg:px-8">
+            <h2 className="text-2xl font-bold text-[#071525]">An instant estimate isn’t available for this service</h2>
+            <p className="mt-3 text-sm leading-7 text-gray-600">
+              This service is priced case by case. Send us your project details and our team will prepare a custom quote for you.
+            </p>
+            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+              <Link to={`/services/${encodeURIComponent(slug)}/request`}>
+                <button type="button" className="flex w-full items-center justify-center gap-2 rounded-md bg-[#f5b400] px-6 py-3 text-sm font-bold text-[#071525] transition hover:bg-[#dca200] sm:w-auto">
+                  Request a Quote <FaArrowRight />
+                </button>
+              </Link>
+              <Link to={`/services/${encodeURIComponent(slug)}`}>
+                <button type="button" className="w-full rounded-md border border-gray-300 px-6 py-3 text-sm font-semibold text-[#071525] transition hover:bg-gray-50 sm:w-auto">
+                  Back to service
+                </button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
+  // Result view
+  if (estimate) {
+    const lines = estimate.lines || [];
+    return (
+      <div className="bg-white">
+        <Hero crumb="Your Estimate" />
+        <section className="py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+            <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm sm:p-10">
+              <div className="text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
+                  <FaCheckCircle className="text-3xl" />
+                </div>
+                <p className="mt-6 text-sm font-medium text-gray-500">Indicative estimate for</p>
+                <h2 className="mt-1 text-2xl font-bold text-[#071525]">{estimate.service?.name || serviceName}</h2>
+              </div>
+
+              <div className="mt-8 rounded-lg bg-[#071525] px-6 py-8 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.15em] text-gray-400">Estimated Range</p>
+                <p className="mt-3 text-3xl font-bold text-[#f5b400] sm:text-4xl">
+                  {formatCurrency(estimate.range?.low)} – {formatCurrency(estimate.range?.high)}
+                </p>
+                <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-gray-400">{estimate.note}</p>
+              </div>
+
+              {/* breakdown */}
+              <div className="mt-8 overflow-hidden rounded-lg border border-gray-200">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr>
+                      <th className="px-4 py-2 font-medium">Item</th>
+                      <th className="px-4 py-2 font-medium text-right">Qty</th>
+                      <th className="px-4 py-2 font-medium text-right">Unit price</th>
+                      <th className="px-4 py-2 font-medium text-right">Line total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 bg-white">
+                    {lines.map((l) => (
+                      <tr key={l.rateId}>
+                        <td className="px-4 py-2 text-[#071525]">{l.label}</td>
+                        <td className="px-4 py-2 text-right text-gray-600">{Number(l.quantity)} {l.unit}</td>
+                        <td className="px-4 py-2 text-right text-gray-600">{formatCurrency(l.unitPrice)}</td>
+                        <td className="px-4 py-2 text-right text-gray-800">{formatCurrency(l.lineTotal)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <dl className="mt-4 ml-auto max-w-xs space-y-1.5 text-sm">
+                <div className="flex justify-between"><dt className="text-gray-500">Subtotal</dt><dd className="text-gray-900">{formatCurrency(estimate.subtotal)}</dd></div>
+                <div className="flex justify-between"><dt className="text-gray-500">VAT ({Number(estimate.taxRatePct)}%)</dt><dd className="text-gray-900">{formatCurrency(estimate.taxAmount)}</dd></div>
+                <div className="flex justify-between border-t border-gray-200 pt-1.5 text-base font-bold"><dt className="text-[#071525]">Total</dt><dd className="text-[#071525]">{formatCurrency(estimate.total)}</dd></div>
+              </dl>
+
+              <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                <button type="button" onClick={() => setEstimate(null)} className="rounded-md border border-gray-300 px-6 py-3 text-sm font-semibold text-[#071525] transition hover:bg-gray-50">
+                  Adjust Estimate
+                </button>
+                <Link to={`/services/${encodeURIComponent(slug)}/request`}>
+                  <button type="button" className="flex w-full items-center justify-center gap-2 rounded-md bg-[#f5b400] px-6 py-3 text-sm font-bold text-[#071525] transition hover:bg-[#dca200] sm:w-auto">
+                    Request Full Quote <FaArrowRight />
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Input form
   return (
     <div className="bg-white">
-
-      <section className="relative overflow-hidden bg-[#071525]">
-
-        <div className="absolute inset-0 bg-gradient-to-r from-[#071525] via-[#071525]/95 to-[#071525]/80" />
-
-        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
-
-
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-
-            <Link
-              to={PUBLIC_PATHS.HOME}
-              className="hover:text-[#f5b400] cursor-pointer"
-            >
-              Home
-            </Link>
-
-            <span>›</span>
-
-            <Link
-              to={`/services/${encodeURIComponent(slug)}`}
-              className="hover:text-[#f5b400] cursor-pointer"
-            >
-              {service.title}
-            </Link>
-
-            <span>›</span>
-
-            <span className="text-white">
-              Estimate
-            </span>
-
-          </div>
-
-
-          <div className="mt-8 max-w-2xl">
-
-            <div className="flex items-center gap-4">
-
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#f5b400] text-[#071525]">
-                <ServiceIcon className="text-2xl" />
-              </div>
-
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">
-                  Instant Estimate
-                </p>
-
-                <h1 className="mt-1 text-3xl font-bold text-white sm:text-5xl">
-                  {service.title}
-                </h1>
-              </div>
-
-            </div>
-
-            <div className="mt-5 h-1 w-12 bg-[#f5b400]" />
-
-            <p className="mt-5 text-sm leading-7 text-gray-300 sm:text-base">
-              {service.description}
-            </p>
-
-          </div>
-
-        </div>
-      </section>
-
-
-  
+      <Hero crumb="Estimate" />
       <section className="py-14 sm:py-20">
-
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-
           <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
-
-
-      
             <div>
-
-              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">
-                How It Works
-              </p>
-
-              <h2 className="mt-2 text-3xl font-bold text-[#071525]">
-                Get a quick project estimate
-              </h2>
-
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">How It Works</p>
+              <h2 className="mt-2 text-3xl font-bold text-[#071525]">Get a quick project estimate</h2>
               <p className="mt-4 text-sm leading-7 text-gray-600">
-                Provide a few basic details about your project and our system
-                will calculate a preliminary estimate specifically for{' '}
-                <strong>{service.title}</strong>.
+                Enter the quantities that apply to your project for <strong>{serviceName}</strong> and we’ll calculate an
+                indicative cost from our current rates.
               </p>
-
-
               <div className="mt-8 space-y-5">
-
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
-                    <span className="font-bold">1</span>
+                {[
+                  ['1', 'Enter your quantities', 'Fill in the amounts for the items relevant to your project.'],
+                  ['2', 'We calculate the estimate', 'Your quantities are priced against this service’s rate card, with VAT.'],
+                  ['3', 'Request a detailed quote', 'Happy with the range? Ask our team for a formal quotation.'],
+                ].map(([n, title, desc]) => (
+                  <div key={n} className="flex gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
+                      <span className="font-bold">{n}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-[#071525]">{title}</h3>
+                      <p className="mt-1 text-sm text-gray-500">{desc}</p>
+                    </div>
                   </div>
-
-                  <div>
-                    <h3 className="font-semibold text-[#071525]">
-                      Tell us about your project
-                    </h3>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      Enter the approximate size and project requirements.
-                    </p>
-                  </div>
-                </div>
-
-
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
-                    <span className="font-bold">2</span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-[#071525]">
-                      We calculate the estimate
-                    </h3>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      Your inputs are evaluated against the pricing rules for
-                      this service.
-                    </p>
-                  </div>
-                </div>
-
-
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
-                    <span className="font-bold">3</span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-[#071525]">
-                      Request a detailed quote
-                    </h3>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      Our team can review your project and provide a formal
-                      quotation.
-                    </p>
-                  </div>
-                </div>
-
+                ))}
               </div>
-
             </div>
-
 
             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-
               <div className="mb-6">
-                <h2 className="text-xl font-bold text-[#071525]">
-                  Project Information
-                </h2>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Estimating: <strong>{service.title}</strong>
-                </p>
+                <h2 className="text-xl font-bold text-[#071525]">Project Information</h2>
+                <p className="mt-1 text-sm text-gray-500">Estimating: <strong>{serviceName}</strong></p>
               </div>
 
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                {rates.map((r) => (
+                  <div key={r.id} className="flex flex-col gap-1">
+                    <label htmlFor={`rate-${r.id}`} className="text-sm font-medium text-gray-700">
+                      {r.label}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        id={`rate-${r.id}`}
+                        type="number"
+                        min="0"
+                        step="any"
+                        value={quantities[r.id] ?? ''}
+                        onChange={setQty(r.id)}
+                        placeholder="0"
+                        className="w-full rounded-md border border-gray-300 px-3 py-3 text-sm text-gray-900 outline-none transition focus:border-[#f5b400] focus:ring focus:ring-[#f5b400]/20"
+                      />
+                      <span className="shrink-0 text-sm text-gray-400">{r.unit}</span>
+                    </div>
+                    <p className="text-xs text-gray-400">
+                      {formatCurrency(r.unitPrice)} / {r.unit}
+                      {r.minQty != null && Number(r.minQty) > 0 ? ` · min ${Number(r.minQty)}` : ''}
+                    </p>
+                  </div>
+                ))}
 
-              <form
-                onSubmit={handleSubmit}
-                className="space-y-5"
-                noValidate
-              >
-
-   
-                <div>
-
-                  <Input
-                    id="size"
-                    label={service.unitLabel}
-                    type="number"
-                    min="0"
-                    value={values.size}
-                    onChange={handleChange('size')}
-                    placeholder={service.unitPlaceholder}
-                  />
-
-                  <p className="mt-1 text-xs text-gray-400">
-                    Unit: {service.unitSuffix}
-                  </p>
-
-                </div>
-
-
-  
-                <Select
-                  id="scope"
-                  label={service.scopeLabel}
-                  options={service.scopes}
-                  value={values.scope}
-                  onChange={handleChange('scope')}
-                />
-
-
-
-                <div className="flex flex-col gap-1">
-
-                  <label
-                    htmlFor="notes"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Additional project details
-                  </label>
-
-                  <textarea
-                    id="notes"
-                    rows={5}
-                    maxLength={2000}
-                    value={values.notes}
-                    onChange={handleChange('notes')}
-                    placeholder="Tell us anything else that may help us understand your project..."
-                    className="rounded-md border border-gray-300 px-3 py-3 text-sm text-gray-900 outline-none transition
-                     focus:border-[#f5b400] focus:ring focus:ring-[#f5b400]/20 focus:border-none"
-                  />
-
-                  <p className="text-right text-xs text-gray-400">
-                    {values.notes.length}/2000
-                  </p>
-
-                </div>
-
-
-                {error && (
-                  <div
-                    role="alert"
-                    className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600"
-                  >
-                    {error}
+                {(formError || error) && (
+                  <div role="alert" className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                    {formError || error}
                   </div>
                 )}
-
-
 
                 <button
                   type="submit"
                   disabled={estimating}
-                  className="flex w-full items-center justify-center gap-2 rounded-md bg-[#f5b400] px-6 py-3 text-sm font-bold
-                   text-[#071525] transition hover:bg-[#dca200] disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+                  className="flex w-full items-center justify-center gap-2 rounded-md bg-[#f5b400] px-6 py-3 text-sm font-bold text-[#071525] transition hover:bg-[#dca200] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <FaCalculator />
-
-                  {estimating
-                    ? 'Calculating Estimate...'
-                    : 'Calculate Estimate'}
+                  {estimating ? 'Calculating Estimate…' : 'Calculate Estimate'}
                 </button>
 
-
                 <p className="text-center text-xs leading-5 text-gray-400">
-                  Estimates are indicative only and are not a binding quotation.
-                  Final pricing will be confirmed after project assessment.
+                  Estimates are indicative only and are not a binding quotation. Final pricing is confirmed after project assessment.
                 </p>
-
               </form>
-
             </div>
-
           </div>
-
         </div>
-
       </section>
-
     </div>
   );
 }
-
 
 export default EstimateResult;

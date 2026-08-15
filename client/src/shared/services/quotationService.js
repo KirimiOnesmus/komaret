@@ -16,6 +16,8 @@ const quotationService = {
 
   downloadPdf: (id) => api.get(`${RESOURCE}/${encodeURIComponent(id)}/pdf`, { responseType: 'blob' }),
 
+  sendToClient: (id) => api.post(`${RESOURCE}/${encodeURIComponent(id)}/send`),
+
 
   createFromServiceRequest: (serviceRequestId) =>
     api.post(`${RESOURCE}/from-service-request/${encodeURIComponent(serviceRequestId)}`),

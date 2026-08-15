@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrash, FaFilePdf } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaFilePdf, FaPrint, FaPaperPlane } from 'react-icons/fa';
 import PageContainer from '../../../shared/components/ui/PageContainer';
 import Breadcrumbs from '../../../shared/components/ui/Breadcrumbs';
 import Loading from '../../../shared/components/common/Loading';
@@ -23,8 +23,9 @@ function fmtDate(v) {
 function QuotationDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { quotation, loading, error, updateStatus, remove } = useQuotation({ id });
+  const { quotation, loading, error, updateStatus, remove, fetchOne } = useQuotation({ id });
   const [busy, setBusy] = useState(false);
+  const [sending, setSending] = useState(false);
 
   if (loading || !quotation) return <Loading label="Loading quotation…" />;
   if (error) return <p className="p-6 text-sm text-red-600">{error}</p>;
@@ -61,6 +62,41 @@ function QuotationDetails() {
     }
   };
 
+  const handlePrint = async () => {
+    try {
+      const res = await quotationService.downloadPdf(id);
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const w = window.open(url, '_blank');
+      if (w) {
+        w.addEventListener('load', () => {
+          w.focus();
+          w.print();
+        });
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch {
+      alert('Unable to open the quotation for printing.');
+    }
+  };
+
+  const handleSend = async () => {
+    if (!q.client?.email) {
+      alert('This client has no email address on file, so the quotation can’t be emailed.');
+      return;
+    }
+    if (!window.confirm(`Email quotation ${q.number} to ${q.client.email}?`)) return;
+    setSending(true);
+    try {
+      const { data } = await quotationService.sendToClient(id);
+      await fetchOne(id);
+      alert(`Quotation sent to ${data.to}.`);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Unable to send the quotation.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   const validUntil = fmtDate(q.validUntil);
 
   return (
@@ -68,6 +104,10 @@ function QuotationDetails() {
       breadcrumbs={<Breadcrumbs items={[{ label: 'Quotations', to: ADMIN_PATHS.QUOTATIONS }, { label: q.number }]} />}
       actions={
         <div className="flex items-center gap-2">
+          <Button onClick={handleSend} disabled={sending}>
+            <FaPaperPlane className="mr-2 text-xs" /> {sending ? 'Sending…' : 'Send to client'}
+          </Button>
+          <Button variant="secondary" onClick={handlePrint}><FaPrint className="mr-2 text-xs" /> Print</Button>
           <Button variant="secondary" onClick={handlePdf}><FaFilePdf className="mr-2 text-xs" /> PDF</Button>
           <Link to={`/admin/quotations/${id}/edit`}><Button variant="secondary"><FaEdit className="mr-2 text-xs" /> Edit</Button></Link>
           <Button variant="danger" onClick={handleDelete} disabled={busy}><FaTrash className="mr-2 text-xs" /> {busy ? 'Deleting…' : 'Delete'}</Button>

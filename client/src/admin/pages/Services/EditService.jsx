@@ -52,7 +52,7 @@ function EditService() {
         initialValues={{
           name: service.name || '',
           slug: service.slug || '',
-          category: service.category || '',
+          categoryId: service.categoryId || '',
           summary: service.summary || '',
           description: service.description || '',
           isPublished: service.isPublished ?? true,

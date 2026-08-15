@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FaArrowRight,
@@ -13,15 +13,9 @@ import Input from '../../../shared/components/common/Input';
 import Select from '../../../shared/components/common/Select';
 import Button from '../../../shared/components/common/Button';
 import useServiceRequest from '../../../shared/hooks/useServiceRequest';
+import useServices from '../../../shared/hooks/useServices';
 
 import quoteImage from '../../../assets/images/projects.jpg';
-
-const SERVICE_OPTIONS = [
-  { value: 'general-construction', label: 'General Construction' },
-  { value: 'interior-design', label: 'Interior Design' },
-  { value: 'renovation', label: 'Renovation' },
-  { value: 'machinery-hire', label: 'Machinery Hire' },
-];
 
 const BENEFITS = [
   {
@@ -45,16 +39,33 @@ function Quote() {
   const navigate = useNavigate();
 
   const { submit, submitting, error } = useServiceRequest();
+  const { data: services, loading: servicesLoading } = useServices();
+
+  const serviceOptions = useMemo(
+    () =>
+      (Array.isArray(services) ? services : []).map((s) => ({
+        value: s.id,
+        label: s.name,
+      })),
+    [services]
+  );
 
   const [values, setValues] = useState({
     name: '',
     email: '',
     phone: '',
-    serviceSlug: SERVICE_OPTIONS[0].value,
+    serviceId: '',
     details: '',
   });
 
   const [errors, setErrors] = useState({});
+
+  // Default the service to the first available one once services load.
+  useEffect(() => {
+    if (!values.serviceId && serviceOptions.length > 0) {
+      setValues((v) => ({ ...v, serviceId: serviceOptions[0].value }));
+    }
+  }, [serviceOptions, values.serviceId]);
 
   const handleChange = (field) => (e) => {
     setValues((v) => ({
@@ -83,10 +94,10 @@ function Quote() {
     }
 
     if (result?.data) {
+      const selected = (services || []).find((s) => s.id === values.serviceId);
+      const slug = selected?.slug;
       navigate(
-        `/services/${encodeURIComponent(
-          values.serviceSlug
-        )}/confirmation`,
+        slug ? `/services/${encodeURIComponent(slug)}/confirmation` : '/services',
         {
           state: {
             reference: result.data.reference,
@@ -313,14 +324,22 @@ function Quote() {
                   />
 
                   <Select
-                    id="serviceSlug"
+                    id="serviceId"
                     label="Service"
-                    options={SERVICE_OPTIONS}
-                    value={values.serviceSlug}
-                    onChange={handleChange('serviceSlug')}
+                    options={serviceOptions}
+                    value={values.serviceId}
+                    onChange={handleChange('serviceId')}
+                    disabled={servicesLoading || serviceOptions.length === 0}
+                    error={errors.serviceId}
                   />
 
                 </div>
+
+                {!servicesLoading && serviceOptions.length === 0 && (
+                  <p className="mt-2 text-xs text-amber-600">
+                    No services are available to request right now. Please use the phone number or contact page.
+                  </p>
+                )}
 
 
 

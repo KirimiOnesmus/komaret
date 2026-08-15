@@ -5,6 +5,9 @@ import {
   FaCheck,
   FaInbox,
   FaBell,
+  FaStar,
+  FaRegStar,
+  FaReply,
 } from 'react-icons/fa';
 
 import PageContainer from '../../../shared/components/ui/PageContainer';
@@ -14,6 +17,7 @@ import EmptyState from '../../../shared/components/common/EmptyState';
 import communicationsService from '../../../shared/services/communicationsService';
 import { formatDateTime } from '../../../shared/utils/formatters';
 import extractList from '../../../shared/utils/api';
+import ContactReplyModal from './ContactReplyModal';
 
 const TABS = [
   { key: 'notifications', label: 'Outbound', icon: FaBell },
@@ -91,8 +95,23 @@ function getNotificationColumns(onRetry, retryingId) {
   ];
 }
 
-function getContactMessageColumns(onMarkHandled, updatingId) {
+function ContactTypeBadge({ type }) {
+  const map = {
+    ENQUIRY: { label: 'Enquiry', cls: 'bg-blue-50 text-blue-700' },
+    COMPLAINT: { label: 'Complaint', cls: 'bg-red-50 text-red-700' },
+    TESTIMONIAL: { label: 'Testimonial', cls: 'bg-emerald-50 text-emerald-700' },
+  };
+  const t = map[type] || map.ENQUIRY;
+  return (
+    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${t.cls}`}>
+      {t.label}
+    </span>
+  );
+}
+
+function getContactMessageColumns(onMarkHandled, updatingId, onTogglePublish, publishedCount, onReply) {
   return [
+    { key: 'type', label: 'Type', render: (row) => <ContactTypeBadge type={row.type} /> },
     { key: 'name', label: 'From', render: (row) => row.name || '—' },
     { key: 'contact', label: 'Contact', render: (row) => row.email || row.phone || '—' },
     { key: 'subject', label: 'Subject', render: (row) => row.subject || '—' },
@@ -112,18 +131,45 @@ function getContactMessageColumns(onMarkHandled, updatingId) {
     {
       key: 'actions',
       label: '',
-      render: (row) =>
-        row.handled ? null : (
-          <button
-            type="button"
-            onClick={() => onMarkHandled(row.id)}
-            disabled={updatingId === row.id}
-            className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <FaCheck className="text-[10px]" />
-            {updatingId === row.id ? 'Saving…' : 'Mark handled'}
-          </button>
-        ),
+      render: (row) => (
+        <div className="flex items-center justify-end gap-3">
+          {(row.type === 'ENQUIRY' || row.type === 'COMPLAINT') && (
+            <button
+              type="button"
+              onClick={() => onReply(row)}
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#071525] transition-colors hover:underline"
+            >
+              <FaReply className="text-[10px]" />
+              {row.replies?.length ? 'Reply again' : 'Reply'}
+            </button>
+          )}
+          {row.type === 'TESTIMONIAL' && (
+            <button
+              type="button"
+              onClick={() => onTogglePublish(row)}
+              disabled={updatingId === row.id || (!row.isPublished && publishedCount >= 6)}
+              title={!row.isPublished && publishedCount >= 6 ? 'You already have 6 published — unpublish one first' : ''}
+              className={`flex items-center gap-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                row.isPublished ? 'text-emerald-600 hover:underline' : 'text-blue-600 hover:underline'
+              }`}
+            >
+              {row.isPublished ? <FaStar className="text-[10px]" /> : <FaRegStar className="text-[10px]" />}
+              {updatingId === row.id ? 'Saving…' : row.isPublished ? 'Published' : 'Publish'}
+            </button>
+          )}
+          {!row.handled && (
+            <button
+              type="button"
+              onClick={() => onMarkHandled(row.id)}
+              disabled={updatingId === row.id}
+              className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <FaCheck className="text-[10px]" />
+              {updatingId === row.id ? 'Saving…' : 'Mark handled'}
+            </button>
+          )}
+        </div>
+      ),
     },
   ];
 }
@@ -133,6 +179,7 @@ function Communications() {
 
   const [notifications, setNotifications] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [messageType, setMessageType] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -158,14 +205,16 @@ function Communications() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await communicationsService.listContactMessages();
+      const { data } = await communicationsService.listContactMessages(
+        messageType ? { type: messageType } : {}
+      );
       setMessages(extractList(data));
     } catch (err) {
       setError(err.message || 'Unable to load contact messages.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [messageType]);
 
   useEffect(() => {
     if (tab === 'notifications') {
@@ -214,13 +263,38 @@ function Communications() {
     }
   };
 
+  const handleTogglePublish = async (row) => {
+    setUpdatingId(row.id);
+    setActionError(null);
+    try {
+      await communicationsService.setContactMessagePublished(row.id, !row.isPublished);
+      await fetchMessages();
+    } catch (err) {
+      setActionError(err.response?.data?.message || err.message || 'Unable to update this testimonial.');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const [replyTarget, setReplyTarget] = useState(null);
+
+  const handleSendReply = async ({ body, channel }) => {
+    if (!replyTarget) return;
+    await communicationsService.replyToContactMessage(replyTarget.id, { body, channel });
+    setReplyTarget(null);
+    await fetchMessages();
+  };
+
   const notificationRows = Array.isArray(notifications) ? notifications : [];
   const messageRows = Array.isArray(messages) ? messages : [];
+  const publishedTestimonialCount = messageRows.filter(
+    (row) => row.type === 'TESTIMONIAL' && row.isPublished
+  ).length;
   const rows = tab === 'notifications' ? notificationRows : messageRows;
   const columns =
     tab === 'notifications'
       ? getNotificationColumns(handleRetry, retryingId)
-      : getContactMessageColumns(handleMarkHandled, updatingId);
+      : getContactMessageColumns(handleMarkHandled, updatingId, handleTogglePublish, publishedTestimonialCount, setReplyTarget);
 
   const failedCount = notificationRows.filter((row) => row.status === 'FAILED').length;
   const newMessageCount = messageRows.filter((row) => !row.handled).length;
@@ -295,6 +369,39 @@ function Communications() {
         </div>
       )}
 
+      {!loading && !error && tab === 'messages' && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {[
+            { value: '', label: 'All' },
+            { value: 'ENQUIRY', label: 'Enquiries' },
+            { value: 'COMPLAINT', label: 'Complaints' },
+            { value: 'TESTIMONIAL', label: 'Testimonials' },
+          ].map((f) => (
+            <button
+              key={f.value || 'all'}
+              type="button"
+              onClick={() => setMessageType(f.value)}
+              className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors ${
+                messageType === f.value
+                  ? 'border-[#071525] bg-[#071525] text-white'
+                  : 'border-gray-200 text-gray-600 hover:border-[#f5b400] hover:text-[#071525]'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!loading && !error && tab === 'messages' && messageType === 'TESTIMONIAL' && (
+        <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+          <p className="text-sm text-gray-700">
+            <strong>{publishedTestimonialCount}/6</strong> testimonials published to the website slider.
+            {publishedTestimonialCount >= 6 && ' Unpublish one to feature another.'}
+          </p>
+        </div>
+      )}
+
       {loading && <Loading label={tab === 'notifications' ? 'Loading communications...' : 'Loading messages...'} />}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -310,6 +417,13 @@ function Communications() {
       )}
 
       {!loading && !error && rows.length > 0 && <Table columns={columns} data={rows} />}
+
+      <ContactReplyModal
+        message={replyTarget}
+        isOpen={Boolean(replyTarget)}
+        onClose={() => setReplyTarget(null)}
+        onSend={handleSendReply}
+      />
     </PageContainer>
   );
 }

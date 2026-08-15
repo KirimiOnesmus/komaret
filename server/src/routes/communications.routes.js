@@ -8,5 +8,7 @@ router.post('/:id/retry', controller.retry);
 
 router.get('/contact-messages', controller.listContactMessages);
 router.patch('/contact-messages/:id', controller.markContactMessageHandled);
+router.patch('/contact-messages/:id/publish', controller.setContactMessagePublished);
+router.post('/contact-messages/:id/reply', controller.replyToContactMessage);
 
 export default router;

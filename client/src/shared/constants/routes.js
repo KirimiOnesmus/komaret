@@ -52,7 +52,7 @@ export const ADMIN_PATHS = Object.freeze({
   CRM: '/admin/crm',
   SERVICE_REQUESTS: '/admin/service-requests',
   COMMUNICATIONS: '/admin/communications',
-  Payments: '/admin/payments',
+  PAYMENTS: '/admin/payments',
 
   REPORTS: '/admin/reports',
   SETTINGS: '/admin/settings',
@@ -91,7 +91,7 @@ export const ADMIN_ROUTE_PATHS = Object.freeze({
   CRM: 'crm',
   SERVICE_REQUESTS: 'service-requests',
   COMMUNICATIONS: 'communications',
-  Payments: 'payments',
+  PAYMENTS: 'payments',
   REPORTS: 'reports',
   SETTINGS: 'settings',
 });

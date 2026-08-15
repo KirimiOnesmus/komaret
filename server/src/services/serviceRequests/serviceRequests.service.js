@@ -1,4 +1,4 @@
-// Service Requests — public intake + instant estimate + admin triage.
+
 import crypto from 'node:crypto';
 import { getPrisma } from '../../config/db.js';
 import { parsePagination } from '../../utils/pagination.js';
@@ -163,7 +163,7 @@ export async function getById(id) {
   const db = getPrisma();
   const r = await db.serviceRequest.findUnique({
     where: { id },
-    include: { service: true, client: true, quotations: true, documents: true, requestedMachinery: true },
+    include: { service: true, client: true, quotations: true, requestedMachinery: true },
   });
   if (!r) throw new ApiError(httpStatus.NOT_FOUND, 'Request not found', 'REQUEST_NOT_FOUND');
   return r;

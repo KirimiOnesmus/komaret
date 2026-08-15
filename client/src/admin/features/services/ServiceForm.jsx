@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { FaMagic, FaLink } from 'react-icons/fa';
 import Input from '../../../shared/components/common/Input';
 import Button from '../../../shared/components/common/Button';
-import { SERVICE_CATEGORIES, slugify, SLUG_PATTERN } from './serviceCatalog';
+import { slugify, SLUG_PATTERN } from './serviceCatalog';
+import useAdminCategories from './useAdminCategories';
 
 const NAVY = 'bg-[#071525] text-white hover:bg-[#0d2036]';
 
@@ -44,10 +45,12 @@ export default function ServiceForm({
   onSubmit,
   onCancel,
 }) {
+  const { categories, loading: categoriesLoading } = useAdminCategories();
+
   const [values, setValues] = useState(() => ({
     name: '',
     slug: '',
-    category: '',
+    categoryId: '',
     summary: '',
     description: '',
     isPublished: true,
@@ -107,7 +110,7 @@ export default function ServiceForm({
     const payload = {
       name: values.name.trim(),
       slug: slugify(values.slug || values.name),
-      category: values.category.trim() || null,
+      categoryId: values.categoryId || null,
       summary: values.summary.trim() || null,
       description: values.description.trim() || null,
       isPublished: Boolean(values.isPublished),
@@ -203,14 +206,18 @@ export default function ServiceForm({
           </label>
           <select
             id="category"
-            value={values.category}
-            onChange={(e) => set('category', e.target.value)}
-            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#071525] focus:outline-none focus:ring-1 focus:ring-[#071525]"
+            value={values.categoryId}
+            onChange={(e) => set('categoryId', e.target.value)}
+            disabled={categoriesLoading}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-[#071525] focus:outline-none focus:ring-1 focus:ring-[#071525] disabled:opacity-60"
           >
-            <option value="">Select a category…</option>
-            {SERVICE_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
+            <option value="">
+              {categoriesLoading ? 'Loading categories…' : 'Select a category…'}
+            </option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+                {c.isPublished ? '' : ' (internal)'}
               </option>
             ))}
           </select>

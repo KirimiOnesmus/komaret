@@ -12,3 +12,6 @@ export const listRates = asyncHandler(async (req, res) => res.json(await service
 export const addRate = asyncHandler(async (req, res) => res.status(201).json(await service.addRate(req.params.id, req.body)));
 export const updateRate = asyncHandler(async (req, res) => res.json(await service.updateRate(req.params.rateId, req.body)));
 export const removeRate = asyncHandler(async (req, res) => { await service.removeRate(req.params.rateId); res.status(204).end(); });
+
+export const setImage = asyncHandler(async (req, res) => res.json(await service.setImage(req.params.id, req.file)));
+export const removeImage = asyncHandler(async (req, res) => res.json(await service.removeImage(req.params.id)));

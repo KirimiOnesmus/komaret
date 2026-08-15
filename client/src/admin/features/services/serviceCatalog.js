@@ -1,15 +1,4 @@
 
-export const SERVICE_CATEGORIES = [
-  'General Construction',
-  'Interior Design',
-  'Renovation',
-  'Real Estate Development',
-  'Machinery Hire',
-  'Labour Supply',
-  'Consultation',
-  'Other',
-];
-
 
 export function slugify(input) {
   return String(input || '')

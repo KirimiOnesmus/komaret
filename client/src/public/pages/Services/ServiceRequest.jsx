@@ -12,6 +12,7 @@ import {
 import Input from '../../../shared/components/common/Input';
 import Button from '../../../shared/components/common/Button';
 import useServiceRequest from '../../../shared/hooks/useServiceRequest';
+import useServices from '../../../shared/hooks/useServices';
 
 // import serviceRequestImage from '../../../assets/images/service-request.jpg';
 
@@ -70,8 +71,9 @@ function ServiceRequest() {
   const navigate = useNavigate();
 
   const { submit, submitting, error } = useServiceRequest();
+  const { data: apiService } = useServices({ slug });
 
-  const service =
+  const fallback =
     SERVICE_CONTENT[slug] || {
       title: 'Our Service',
       description:
@@ -83,6 +85,14 @@ function ServiceRequest() {
         'End-to-end service delivery',
       ],
     };
+
+  // Prefer the real service (its name/description) but keep the marketing
+  // bullet points from the fallback content for layout.
+  const service = {
+    title: apiService?.name || fallback.title,
+    description: apiService?.description || apiService?.summary || fallback.description,
+    points: fallback.points,
+  };
 
   const [values, setValues] = useState({
     name: '',
@@ -114,7 +124,8 @@ function ServiceRequest() {
 
     const payload = {
       ...values,
-      serviceSlug: slug,
+      serviceId: apiService?.id,
+      type: 'SERVICE',
     };
 
     const result = await submit(payload).catch(() => null);

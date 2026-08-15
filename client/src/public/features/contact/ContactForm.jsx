@@ -15,9 +15,16 @@ import { isValidEmail } from '../../../shared/validators/authValidators';
 
 const MESSAGE_MAX_LENGTH = 2000;
 
+const CONTACT_TYPES = [
+  { value: 'ENQUIRY', label: 'General enquiry' },
+  { value: 'TESTIMONIAL', label: 'Testimonial / feedback' },
+  { value: 'COMPLAINT', label: 'Complaint' },
+];
+
 
 function ContactForm() {
   const [values, setValues] = useState({
+    type: 'ENQUIRY',
     name: '',
     email: '',
     phone: '',
@@ -106,8 +113,8 @@ function ContactForm() {
             </p>
 
             <p className="mt-1 text-xs leading-5 text-green-700">
-              Thanks for reaching out. Our team will get back to
-              you shortly.
+              Thanks for reaching out. We've sent a confirmation to your
+              email, and our team will get back to you shortly.
             </p>
           </div>
 
@@ -124,6 +131,24 @@ function ContactForm() {
       noValidate
     >
 
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="type" className="text-xs font-medium text-gray-700">
+          What's this about?
+        </label>
+        <select
+          id="type"
+          value={values.type}
+          onChange={handleChange('type')}
+          className="w-full rounded-md border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 outline-none transition focus:border-[#f5b400] focus:ring-1 focus:ring-[#f5b400]"
+        >
+          {CONTACT_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="grid gap-5 md:grid-cols-2">
 

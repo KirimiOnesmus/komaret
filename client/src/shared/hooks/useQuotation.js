@@ -60,15 +60,17 @@ export default function useQuotation({ id, immediate = Boolean(id) } = {}) {
     return data;
   }, []);
 
+  const remove = useCallback(async (quotationId) => {
+    await quotationService.remove(quotationId);
+  }, []);
+
   useEffect(() => {
-    // Intentional: fetch on mount when `immediate` is set. `fetchOne`
-    // guards its own loading/error state, so this is the standard
-    // data-fetching-hook pattern, not a synchronization bug.
+   
     if (immediate && id) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchOne(id);
     }
   }, [immediate, id, fetchOne]);
 
-  return { quotation, list, loading, error, fetchOne, fetchList, create, update, updateStatus };
+  return { quotation, list, loading, error, fetchOne, fetchList, create, update, updateStatus, remove };
 }

@@ -29,6 +29,28 @@ const COLUMNS = [
     label: 'Status',
     render: (row) => PROJECT_STATUS_LABELS[row.status] || row.status,
   },
+  {
+    key: 'public',
+    label: 'Public',
+    render: (row) => {
+      const live = row.isPublished && row.status === 'COMPLETED';
+      if (live) {
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-green-500" /> Live
+          </span>
+        );
+      }
+      if (row.isPublished) {
+        return (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-700" title="Published, but only shows once the project is Completed">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> Pending
+          </span>
+        );
+      }
+      return <span className="text-xs text-gray-400">Hidden</span>;
+    },
+  },
   { key: 'budget', label: 'Budget', render: (row) => (row.budget != null ? formatCurrency(row.budget) : '—') },
   {
     key: 'actions',

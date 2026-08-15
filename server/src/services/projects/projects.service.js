@@ -109,6 +109,8 @@ export async function create(body, actor) {
         location: body?.location ?? null,
         description: body?.description ?? null,
         publicSummary: body?.publicSummary ?? null,
+        publicDescription: body?.publicDescription ?? null,
+        isPublished: body?.isPublished ?? false,
         progressPct: Number(body?.progressPct) || 0,
         startDate: body?.startDate ? new Date(body.startDate) : null,
         expectedEndDate: body?.expectedEndDate ? new Date(body.expectedEndDate) : null,
@@ -169,7 +171,6 @@ export async function getById(id) {
       labour: { include: { labour: true } },
       images: { orderBy: { sortOrder: 'asc' } },
       activities: { orderBy: { createdAt: 'desc' }, take: 50 },
-      documents: true,
     },
   });
   if (!p) throw new ApiError(httpStatus.NOT_FOUND, 'Project not found', 'PROJECT_NOT_FOUND');
@@ -182,7 +183,7 @@ export async function update(id, body, actor) {
   if (!existing) throw new ApiError(httpStatus.NOT_FOUND, 'Project not found', 'PROJECT_NOT_FOUND');
 
   const data = {};
-  for (const k of ['name', 'location', 'description', 'publicSummary', 'budget']) {
+  for (const k of ['name', 'location', 'description', 'publicSummary', 'publicDescription', 'isPublished', 'budget']) {
     if (body?.[k] !== undefined) data[k] = body[k];
   }
   if (body?.status !== undefined) {

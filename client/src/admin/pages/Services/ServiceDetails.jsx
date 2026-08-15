@@ -6,6 +6,7 @@ import Breadcrumbs from '../../../shared/components/ui/Breadcrumbs';
 import Loading from '../../../shared/components/common/Loading';
 import Button from '../../../shared/components/common/Button';
 import useAdminServices from '../../features/services/useAdminServices';
+import ServiceImage from '../../features/services/ServiceImage';
 import { ADMIN_PATHS } from '../../../shared/constants/routes';
 
 const KES = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 });
@@ -26,7 +27,7 @@ function AcceptsBadge({ icon: Icon, label, on }) {
 function ServiceDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { service, loading, error, fetchOne, remove } = useAdminServices();
+  const { service, loading, error, fetchOne, remove, uploadImage, removeImage } = useAdminServices();
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -88,7 +89,7 @@ function ServiceDetails() {
       <dl className="mt-6 grid gap-6 rounded-xl border border-gray-200 p-5 sm:grid-cols-3">
         <div>
           <dt className="text-xs uppercase tracking-wide text-gray-400">Category</dt>
-          <dd className="mt-1 text-sm font-medium text-[#071525]">{service.category || 'Uncategorised'}</dd>
+          <dd className="mt-1 text-sm font-medium text-[#071525]">{service.categoryRef?.name || service.category || 'Uncategorised'}</dd>
         </div>
         <div>
           <dt className="text-xs uppercase tracking-wide text-gray-400">Display order</dt>
@@ -111,6 +112,16 @@ function ServiceDetails() {
           </p>
         </div>
       )}
+
+      {/* image */}
+      <div className="mt-8">
+        <ServiceImage
+          serviceId={service.id}
+          heroImage={service.heroImage}
+          onUpload={async (id, file) => { await uploadImage(id, file); await fetchOne(id); }}
+          onRemove={async (id) => { await removeImage(id); await fetchOne(id); }}
+        />
+      </div>
 
       {/* accepts */}
       <div className="mt-8">

@@ -1,31 +1,11 @@
 import { Link } from "react-router-dom";
-import {
-  FaBuilding,
-  FaHardHat,
-  FaUsers,
-  FaCouch,
-  FaTools,
-  FaHome,
-  FaDraftingCompass,
-  FaHammer,
-  FaCity,
-  FaArrowRight,
-} from "react-icons/fa";
-
-const SERVICE_ICONS = {
-  construction: FaBuilding,
-  "machinery-hire": FaHardHat,
-  "labor-management": FaUsers, 
-  "interior-design": FaCouch,
-  renovations: FaTools,
-  "real-estate-development": FaHome,
-  "architectural-design": FaDraftingCompass,
-  "building-construction": FaHammer,
-  "property-development": FaCity,
-};
+import { FaArrowRight } from "react-icons/fa";
+import { getCategoryIcon } from "./categoryIcons";
+import { mediaUrl } from "../../../shared/utils/mediaUrl";
 
 function ServiceCard({ service }) {
-  const Icon = SERVICE_ICONS[service.slug] || FaBuilding;
+  const Icon = getCategoryIcon(service.category?.slug);
+  const imageUrl = service.heroImage ? mediaUrl(service.heroImage) : null;
 
   return (
     <div
@@ -45,10 +25,10 @@ function ServiceCard({ service }) {
       "
     >
       <div className="relative h-[145px] overflow-hidden">
-        {service.image ? (
+        {imageUrl ? (
           <img
-            src={service.image}
-            alt={service.title}
+            src={imageUrl}
+            alt={service.name}
             className="
               h-full
               w-full
@@ -107,7 +87,7 @@ function ServiceCard({ service }) {
             group-hover:text-[#dca500]
           "
         >
-          {service.title}
+          {service.name}
         </h3>
 
     
@@ -141,32 +121,34 @@ function ServiceCard({ service }) {
             Request Service
           </Link>
 
-          <Link
-            to={`/services/${encodeURIComponent(service.slug)}/estimate`}
-            className="
-              group/estimate
-              inline-flex
-              items-center
-              gap-1.5
-              text-xs
-              font-semibold
-              text-[#071525]
-              transition-colors
-              duration-200
-              hover:text-[#dca500]
-            "
-          >
-            Get Instant Estimate
-
-            <FaArrowRight
+          {service.supportsEstimate && (
+            <Link
+              to={`/services/${encodeURIComponent(service.slug)}/estimate`}
               className="
-                text-[10px]
-                transition-transform
+                group/estimate
+                inline-flex
+                items-center
+                gap-1.5
+                text-xs
+                font-semibold
+                text-[#071525]
+                transition-colors
                 duration-200
-                group-hover/estimate:translate-x-1
+                hover:text-[#dca500]
               "
-            />
-          </Link>
+            >
+              Get Instant Estimate
+
+              <FaArrowRight
+                className="
+                  text-[10px]
+                  transition-transform
+                  duration-200
+                  group-hover/estimate:translate-x-1
+                "
+              />
+            </Link>
+          )}
 
         </div>
       </div>

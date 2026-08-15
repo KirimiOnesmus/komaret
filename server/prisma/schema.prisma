@@ -107,6 +107,7 @@ enum DiscountType {
 enum NotificationRecipientType {
   LABOUR
   CLIENT
+  CONTACT
 }
 
 enum NotificationStatus {
@@ -150,11 +151,33 @@ model RefreshToken {
 
 // ======================= Service catalogue (spine) =======================
 
+// First-class service category. Drives the public header/footer/home grouping
+// and the services-page filter. Owner-managed; icon is an uploaded SVG path.
+model ServiceCategory {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  summary     String? // one line shown on category cards
+  description String?  @db.Text
+  image       String? // optional showcase image
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  services Service[]
+
+  @@index([isPublished])
+}
+
 model Service {
   id          String  @id @default(cuid())
   name        String
   slug        String  @unique
+  // Legacy freeform label — superseded by categoryId; retired when the
+  // service form is reworked (kept nullable so existing writes don't break).
   category    String?
+  categoryId  String?
   summary     String?
   description String? @db.Text
   heroImage   String? // public showcase image path
@@ -171,11 +194,14 @@ model Service {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  requests   ServiceRequest[]
-  quotations Quotation[]
-  projects   Project[]
-  leads      Lead[]
-  rates      ServiceRate[]
+  categoryRef ServiceCategory? @relation(fields: [categoryId], references: [id])
+  requests    ServiceRequest[]
+  quotations  Quotation[]
+  projects    Project[]
+  leads       Lead[]
+  rates       ServiceRate[]
+
+  @@index([categoryId])
 }
 
 // Admin-editable rate card behind each service. Drives the instant public
@@ -261,15 +287,42 @@ model FollowUp {
 }
 
 // Public "Contact / Company Information" form submissions.
+enum ContactType {
+  ENQUIRY
+  COMPLAINT
+  TESTIMONIAL
+}
+
 model ContactMessage {
-  id        String   @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  subject   String?
-  message   String   @db.Text
-  handled   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String      @id @default(cuid())
+  type        ContactType @default(ENQUIRY)
+  name        String
+  email       String?
+  phone       String?
+  subject     String?
+  message     String      @db.Text
+  handled     Boolean     @default(false)
+  isPublished Boolean     @default(false) // testimonials shown on the public slider (max 6)
+  createdAt   DateTime    @default(now())
+
+  replies ContactReply[]
+
+  @@index([type])
+  @@index([isPublished])
+}
+
+// Owner's replies to enquiry/complaint contact messages (history + audit).
+// Delivery happens through the notification worker (email/WhatsApp).
+model ContactReply {
+  id               String   @id @default(cuid())
+  contactMessageId String
+  channel          Channel
+  body             String   @db.Text
+  createdAt        DateTime @default(now())
+
+  contactMessage ContactMessage @relation(fields: [contactMessageId], references: [id], onDelete: Cascade)
+
+  @@index([contactMessageId])
 }
 
 // ======================= Public requests (unified) =======================
@@ -309,7 +362,6 @@ model ServiceRequest {
   requestedMachinery Machinery?  @relation(fields: [requestedMachineryId], references: [id])
   quotations         Quotation[]
   project            Project?
-  documents          Document[]
 
   @@index([status])
   @@index([serviceId])
@@ -342,7 +394,6 @@ model Quotation {
   serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id])
   createdBy      User            @relation("QuotationCreatedBy", fields: [createdById], references: [id])
   items          QuotationItem[]
-  documents      Document[]
   project        Project?
   payments       Payment[]
   invoices       Invoice[]
@@ -381,6 +432,8 @@ model Project {
   location         String?
   description      String?       @db.Text
   publicSummary    String?       @db.Text // public-safe high-level progress
+  publicDescription String?      @db.Text // public portfolio detail/description (owner-written)
+  isPublished      Boolean       @default(false) // owner must explicitly publish to the portfolio
   progressPct      Int           @default(0)
   startDate        DateTime?
   expectedEndDate  DateTime?
@@ -396,7 +449,6 @@ model Project {
   createdBy      User               @relation("ProjectCreatedBy", fields: [createdById], references: [id])
   machinery      ProjectMachinery[]
   labour         ProjectLabour[]
-  documents      Document[]
   activities     ProjectActivity[]
   images         ProjectImage[]
   notifications  Notification[]
@@ -406,6 +458,7 @@ model Project {
   @@index([clientId])
   @@index([serviceId])
   @@index([status])
+  @@index([isPublished])
 }
 
 // Several images per project — public "Projects / Portfolio" showcase.
@@ -526,31 +579,6 @@ model ProjectLabour {
 
   @@unique([projectId, labourId])
   @@index([labourId])
-}
-
-// ======================= Documents =======================
-// Internal by default (admin-only); public only when deliberately shared.
-
-model Document {
-  id               String   @id @default(cuid())
-  filename         String
-  storedName       String
-  path             String
-  mimeType         String
-  sizeBytes        Int
-  category         String? // contract | drawing | quotation | approval | other
-  isPublic         Boolean  @default(false)
-  projectId        String?
-  serviceRequestId String?
-  quotationId      String?
-  uploadedById     String?
-  createdAt        DateTime @default(now())
-
-  project        Project?        @relation(fields: [projectId], references: [id])
-  serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id])
-  quotation      Quotation?      @relation(fields: [quotationId], references: [id])
-
-  @@index([projectId])
 }
 
 // ======================= Payments (operational tracking only) =======================

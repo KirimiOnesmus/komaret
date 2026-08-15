@@ -21,3 +21,5 @@ export const downloadPdf = asyncHandler(async (req, res) => {
   res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
   stream.pipe(res);
 });
+
+export const sendToClient = asyncHandler(async (req, res) => res.json(await service.sendToClient(req.params.id)));

@@ -130,7 +130,7 @@ function AdminRoutes() {
             path={ADMIN_ROUTE_PATHS.COMMUNICATIONS}
             element={<Communications />}
           />
-          <Route path={ADMIN_ROUTE_PATHS.DOCUMENTS} element={<Payments />} />
+          <Route path={ADMIN_ROUTE_PATHS.PAYMENTS} element={<Payments />} />
 
           <Route
             element={

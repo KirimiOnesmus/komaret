@@ -18,6 +18,7 @@ router.get('/:id', controller.getById);
 router.patch('/:id', controller.update);
 router.patch('/:id/status', controller.updateStatus);
 router.get('/:id/pdf', controller.downloadPdf);
+router.post('/:id/send', controller.sendToClient);
 router.delete('/:id', controller.remove);
 
 export default router;

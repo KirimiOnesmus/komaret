@@ -4,8 +4,8 @@ import PDFDocument from 'pdfkit';
 const money = (n) =>
   Number(n || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-export function renderQuotationPdf(q) {
-  const doc = new PDFDocument({ size: 'A4', margin: 50 });
+
+function drawQuotation(doc, q) {
   const left = 50;
   const right = 545;
 
@@ -68,9 +68,27 @@ export function renderQuotationPdf(q) {
   doc.font('Helvetica').fontSize(9).fillColor('#555');
   if (q.notes) doc.moveDown(1).text(q.notes, left, doc.y, { width: right - left });
   if (q.validUntil) doc.moveDown(0.5).text(`Valid until: ${new Date(q.validUntil).toLocaleDateString('en-KE')}`);
+}
 
+
+export function renderQuotationPdf(q) {
+  const doc = new PDFDocument({ size: 'A4', margin: 50 });
+  drawQuotation(doc, q);
   doc.end();
   return doc;
+}
+
+// Buffer variant — used when attaching the PDF to an email.
+export function renderQuotationPdfBuffer(q) {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const chunks = [];
+    doc.on('data', (c) => chunks.push(c));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+    drawQuotation(doc, q);
+    doc.end();
+  });
 }
 
 export default renderQuotationPdf;

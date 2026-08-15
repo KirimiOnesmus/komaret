@@ -2,9 +2,9 @@ import { Link } from "react-router-dom";
 
 import Button from "../../../shared/components/common/Button";
 import Loading from "../../../shared/components/common/Loading";
-import useServices from "../../../shared/hooks/useServices";
+import useCategories from "../../../shared/hooks/useCategories";
 import useProjects from "../../../shared/hooks/useProjects";
-import { ServiceCard, ProjectCard } from "../../features";
+import { CategoryCard, ProjectCard } from "../../features";
 import {HomeSlider, Testimonials} from "../../features";
 import {
   FaArrowRight,
@@ -19,14 +19,10 @@ import { PUBLIC_PATHS } from "../../../shared/constants/routes";
 
 function Home() {
   const {
-    data: services,
+    data: categories,
     loading,
     error,
-  } = useServices({
-    params: {
-      limit: 3,
-    },
-  });
+  } = useCategories();
 
   const {
     data: projects,
@@ -34,7 +30,7 @@ function Home() {
     error: projectsError,
   } = useProjects({
     params: {
-      limit: 3,
+      limit: 6,
     },
   });
 
@@ -68,9 +64,10 @@ function Home() {
 
         {!loading && !error && (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <ServiceCard key={service.slug} service={service} />
-            ))}
+            {Array.isArray(categories) &&
+              categories.map((category) => (
+                <CategoryCard key={category.slug} category={category} />
+              ))}
           </div>
         )}
       </section>

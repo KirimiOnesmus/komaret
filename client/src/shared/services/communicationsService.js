@@ -9,6 +9,10 @@ const communicationsService = {
   listContactMessages: (params = {}) => api.get('/admin/communications/contact-messages', { params }),
   markContactMessageHandled: (id, handled = true) =>
     api.patch(`/admin/communications/contact-messages/${encodeURIComponent(id)}`, { handled }),
+  setContactMessagePublished: (id, publish = true) =>
+    api.patch(`/admin/communications/contact-messages/${encodeURIComponent(id)}/publish`, { publish }),
+  replyToContactMessage: (id, payload) =>
+    api.post(`/admin/communications/contact-messages/${encodeURIComponent(id)}/reply`, payload),
 };
 
 export default communicationsService;

@@ -46,9 +46,16 @@ export async function listContactMessages(query) {
   const { skip, take, page, limit } = parsePagination(query);
   const where = {};
   if (query?.handled !== undefined) where.handled = query.handled === 'true' || query.handled === true;
+  if (query?.type && ['ENQUIRY', 'COMPLAINT', 'TESTIMONIAL'].includes(query.type)) where.type = query.type;
 
   const [items, total] = await Promise.all([
-    db.contactMessage.findMany({ where, skip, take, orderBy: { createdAt: 'desc' } }),
+    db.contactMessage.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+      include: { replies: { orderBy: { createdAt: 'asc' } } },
+    }),
     db.contactMessage.count({ where }),
   ]);
   return { items, meta: { page, limit, total, pages: Math.ceil(total / limit) } };
@@ -59,4 +66,71 @@ export async function markContactMessageHandled(id, handled = true) {
   const message = await db.contactMessage.findUnique({ where: { id } });
   if (!message) throw new ApiError(httpStatus.NOT_FOUND, 'Contact message not found', 'CONTACT_MESSAGE_NOT_FOUND');
   return db.contactMessage.update({ where: { id }, data: { handled } });
+}
+
+export const MAX_PUBLISHED_TESTIMONIALS = 6;
+
+export async function replyToContactMessage(id, { body, channel } = {}) {
+  const db = getPrisma();
+  const message = await db.contactMessage.findUnique({ where: { id } });
+  if (!message) throw new ApiError(httpStatus.NOT_FOUND, 'Contact message not found', 'CONTACT_MESSAGE_NOT_FOUND');
+
+  if (message.type === 'TESTIMONIAL') {
+    throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'Testimonials cannot be replied to — publish them instead', 'CANNOT_REPLY_TESTIMONIAL');
+  }
+
+  const text = (body || '').trim();
+  if (!text) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'Reply body is required', 'VALIDATION_ERROR');
+
+  
+  let ch = channel;
+  if (!ch) ch = message.email ? 'EMAIL' : (message.phone ? 'WHATSAPP' : null);
+  if (!ch) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'This message has no email or phone to reply to', 'NO_REPLY_ADDRESS');
+  if (ch === 'EMAIL' && !message.email) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'No email address on this message', 'NO_EMAIL');
+  if (ch === 'WHATSAPP' && !message.phone) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'No phone number on this message', 'NO_PHONE');
+
+  const reply = await db.$transaction(async (tx) => {
+    const created = await tx.contactReply.create({
+      data: { contactMessageId: id, channel: ch, body: text },
+    });
+    await tx.notification.create({
+      data: {
+        recipientType: 'CONTACT',
+        channel: ch,
+        templateType: 'contact_reply',
+        payload: { name: message.name, email: message.email, phone: message.phone, subject: message.subject, body: text },
+        status: 'QUEUED',
+      },
+    });
+  
+    
+    await tx.contactMessage.update({ where: { id }, data: { handled: true } });
+    return created;
+  });
+
+  return reply;
+}
+
+export async function setContactMessagePublished(id, publish) {
+  const db = getPrisma();
+  const message = await db.contactMessage.findUnique({ where: { id } });
+  if (!message) throw new ApiError(httpStatus.NOT_FOUND, 'Contact message not found', 'CONTACT_MESSAGE_NOT_FOUND');
+
+  if (publish) {
+    if (message.type !== 'TESTIMONIAL') {
+      throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'Only testimonials can be published to the website', 'NOT_A_TESTIMONIAL');
+    }
+    if (!message.isPublished) {
+      const publishedCount = await db.contactMessage.count({ where: { type: 'TESTIMONIAL', isPublished: true } });
+      if (publishedCount >= MAX_PUBLISHED_TESTIMONIALS) {
+        throw new ApiError(
+          httpStatus.UNPROCESSABLE_ENTITY,
+          `You can publish at most ${MAX_PUBLISHED_TESTIMONIALS} testimonials. Unpublish one first.`,
+          'TESTIMONIAL_LIMIT_REACHED'
+        );
+      }
+    }
+  }
+
+  return db.contactMessage.update({ where: { id }, data: { isPublished: Boolean(publish) } });
 }

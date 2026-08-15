@@ -9,3 +9,9 @@ export const listContactMessages = asyncHandler(async (req, res) => res.json(awa
 export const markContactMessageHandled = asyncHandler(async (req, res) =>
   res.json(await service.markContactMessageHandled(req.params.id, req.body?.handled ?? true)),
 );
+export const setContactMessagePublished = asyncHandler(async (req, res) =>
+  res.json(await service.setContactMessagePublished(req.params.id, req.body?.publish ?? true)),
+);
+export const replyToContactMessage = asyncHandler(async (req, res) =>
+  res.status(201).json(await service.replyToContactMessage(req.params.id, req.body)),
+);

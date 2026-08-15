@@ -21,12 +21,15 @@ function ProjectEditForm({ project, submitting, onSubmit }) {
     location: project.location || '',
     description: project.description || '',
     publicSummary: project.publicSummary || '',
+    publicDescription: project.publicDescription || '',
+    isPublished: project.isPublished ?? false,
     startDate: toDateInput(project.startDate),
     expectedEndDate: toDateInput(project.expectedEndDate),
   });
   const [errors, setErrors] = useState({});
 
   const set = (field) => (e) => setValues((v) => ({ ...v, [field]: e.target.value }));
+  const setValue = (field, value) => setValues((v) => ({ ...v, [field]: value }));
 
   const validate = () => {
     const next = {};
@@ -51,6 +54,8 @@ function ProjectEditForm({ project, submitting, onSubmit }) {
       location: values.location.trim() || null,
       description: values.description.trim() || null,
       publicSummary: values.publicSummary.trim() || null,
+      publicDescription: values.publicDescription.trim() || null,
+      isPublished: Boolean(values.isPublished),
       startDate: values.startDate || null,
       expectedEndDate: values.expectedEndDate || null,
     });
@@ -82,8 +87,33 @@ function ProjectEditForm({ project, submitting, onSubmit }) {
 
       <div className="flex flex-col gap-1">
         <label htmlFor="publicSummary" className="text-sm font-medium text-gray-700">Public summary (optional)</label>
-        <textarea id="publicSummary" rows={2} maxLength={2000} value={values.publicSummary} onChange={set('publicSummary')} placeholder="Shown publicly for completed showcase projects" className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring focus:ring-blue-500" />
+        <textarea id="publicSummary" rows={2} maxLength={2000} value={values.publicSummary} onChange={set('publicSummary')} placeholder="Short line shown on the public project card" className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring focus:ring-blue-500" />
       </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="publicDescription" className="text-sm font-medium text-gray-700">Public description / details (optional)</label>
+        <textarea id="publicDescription" rows={4} maxLength={5000} value={values.publicDescription} onChange={set('publicDescription')} placeholder="Fuller details shown on the public project page" className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring focus:ring-blue-500" />
+      </div>
+
+      <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-gray-200 p-3 transition-colors hover:border-[#f5b400]/60 has-[:checked]:border-[#f5b400] has-[:checked]:bg-[#f5b400]/5">
+        <input
+          type="checkbox"
+          checked={Boolean(values.isPublished)}
+          onChange={(e) => setValue('isPublished', e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#071525] focus:ring-[#071525]"
+        />
+        <span>
+          <span className="block text-sm font-medium text-gray-800">Publish to the public portfolio</span>
+          <span className="block text-xs text-gray-500">
+            The project appears on the website only when it is <strong>Completed</strong> and this is on.
+            {values.status !== 'COMPLETED' && values.isPublished && (
+              <span className="mt-1 block text-amber-600">
+                This project isn’t marked Completed yet, so it stays hidden until it is.
+              </span>
+            )}
+          </span>
+        </span>
+      </label>
 
       <div className="flex justify-end pt-2">
         <Button type="submit" disabled={submitting}>{submitting ? 'Saving…' : 'Save changes'}</Button>

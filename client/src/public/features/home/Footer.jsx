@@ -13,9 +13,17 @@ import { Link } from 'react-router-dom';
 
 import logo from '../../../assets/images/logo-dark.svg';
 import { PUBLIC_PATHS } from '../../../shared/constants/routes';
+import useCategories from '../../../shared/hooks/useCategories';
+
+const FOOTER_CATEGORY_LIMIT = 6;
 
 const Footer = () => {
   const year = new Date().getFullYear();
+  const { data: categories, loading: categoriesLoading } = useCategories();
+
+  const footerCategories = Array.isArray(categories)
+    ? categories.slice(0, FOOTER_CATEGORY_LIMIT)
+    : [];
 
   return (
     <footer className="bg-[#071525] text-white">
@@ -170,59 +178,32 @@ const Footer = () => {
 
             <ul className="mt-5 space-y-3">
 
-              <li>
-                <Link
-                  to={PUBLIC_PATHS.SERVICES}
-                  className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
-                >
-                  Construction Management
-                </Link>
-              </li>
+              {categoriesLoading && (
+                <li className="text-sm text-gray-500">Loading...</li>
+              )}
 
-              <li>
-                <Link
-                  to={PUBLIC_PATHS.SERVICES}
-                  className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
-                >
-                  Machinery Hire
-                </Link>
-              </li>
+              {!categoriesLoading && footerCategories.length === 0 && (
+                <li>
+                  <Link
+                    to={PUBLIC_PATHS.SERVICES}
+                    className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
+                  >
+                    View all services
+                  </Link>
+                </li>
+              )}
 
-              <li>
-                <Link
-                  to={PUBLIC_PATHS.SERVICES}
-                  className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
-                >
-                  Labour Management
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to={PUBLIC_PATHS.SERVICES}
-                  className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
-                >
-                  Interior Design
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to={PUBLIC_PATHS.SERVICES}
-                  className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
-                >
-                  Renovations
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to={PUBLIC_PATHS.SERVICES}
-                  className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
-                >
-                  Real Estate Development
-                </Link>
-              </li>
+              {!categoriesLoading &&
+                footerCategories.map((category) => (
+                  <li key={category.slug}>
+                    <Link
+                      to={`${PUBLIC_PATHS.SERVICES}?category=${encodeURIComponent(category.slug)}`}
+                      className="text-sm text-gray-400 transition-colors hover:text-[#f5b400]"
+                    >
+                      {category.name}
+                    </Link>
+                  </li>
+                ))}
 
             </ul>
 

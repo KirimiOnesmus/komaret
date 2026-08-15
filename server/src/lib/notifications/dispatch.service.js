@@ -12,6 +12,9 @@ export async function sendNotification(n) {
     const labour = await db.labour.findUnique({ where: { id: n.labourId } });
     if (!labour) throw new Error('Recipient (labour) not found');
     to = n.channel === 'WHATSAPP' ? labour.phone : labour.email;
+  } else if (n.recipientType === 'CONTACT') {
+    // Contact-form submitter — no DB record; address comes from the payload.
+    to = n.channel === 'WHATSAPP' ? n.payload?.phone : n.payload?.email;
   } else {
     const client = await db.client.findUnique({ where: { id: n.clientId } });
     if (!client) throw new Error('Recipient (client) not found');

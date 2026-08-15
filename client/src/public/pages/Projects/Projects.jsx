@@ -18,15 +18,7 @@ import { PUBLIC_PATHS } from '../../../shared/constants/routes';
 import projectsHero from '../../../assets/images/projects.jpg';
 
 
-const FILTERS = [
-  'All Projects',
-  'Completed',
-  'Ongoing',
-  'Residential',
-  'Commercial',
-  'Industrial',
-  'Infrastructure',
-];
+const ALL = 'All Projects';
 
 
 function Projects() {
@@ -34,7 +26,7 @@ function Projects() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [activeFilter, setActiveFilter] = useState('All Projects');
+  const [activeFilter, setActiveFilter] = useState(ALL);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -73,25 +65,21 @@ function Projects() {
 
 
 
+  const FILTERS = useMemo(() => {
+    const names = new Set();
+    projects.forEach((p) => {
+      if (p.service?.name) names.add(p.service.name);
+    });
+    return [ALL, ...Array.from(names).sort()];
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
     let result = [...projects];
 
-    if (activeFilter !== 'All Projects') {
-      result = result.filter((project) => {
-        const category =
-          project.category ||
-          project.type ||
-          project.projectType ||
-          '';
-
-        const status =
-          project.status || '';
-
-        return (
-          category.toLowerCase() === activeFilter.toLowerCase() ||
-          status.toLowerCase() === activeFilter.toLowerCase()
-        );
-      });
+    if (activeFilter !== ALL) {
+      result = result.filter(
+        (project) => (project.service?.name || '').toLowerCase() === activeFilter.toLowerCase()
+      );
     }
 
     if (search.trim()) {
@@ -99,10 +87,11 @@ function Projects() {
 
       result = result.filter((project) => {
         return (
-          project.title?.toLowerCase().includes(query) ||
+          project.name?.toLowerCase().includes(query) ||
           project.location?.toLowerCase().includes(query) ||
+          project.summary?.toLowerCase().includes(query) ||
           project.description?.toLowerCase().includes(query) ||
-          project.category?.toLowerCase().includes(query)
+          project.service?.name?.toLowerCase().includes(query)
         );
       });
     }

@@ -2,6 +2,9 @@
 import { getPrisma } from '../../config/db.js';
 import { ApiError } from '../../utils/ApiError.js';
 import httpStatus from '../../utils/httpStatus.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { config } from '../../config/env.js';
 
 function slugify(s) {
   return String(s || '')
@@ -12,16 +15,22 @@ function slugify(s) {
 }
 
 
-export async function list() {
+export async function list(query = {}) {
   const db = getPrisma();
-  return db.service.findMany({ orderBy: { sortOrder: 'asc' }, include: { _count: { select: { rates: true } } } });
+  const where = {};
+  if (query?.categoryId) where.categoryId = query.categoryId;
+  return db.service.findMany({
+    where,
+    orderBy: { sortOrder: 'asc' },
+    include: { _count: { select: { rates: true } }, categoryRef: { select: { id: true, name: true, slug: true } } },
+  });
 }
 
 export async function getById(id) {
   const db = getPrisma();
   const service = await db.service.findUnique({
     where: { id },
-    include: { rates: { orderBy: { sortOrder: 'asc' } } },
+    include: { rates: { orderBy: { sortOrder: 'asc' } }, categoryRef: { select: { id: true, name: true, slug: true } } },
   });
   if (!service) throw new ApiError(httpStatus.NOT_FOUND, 'Service not found', 'SERVICE_NOT_FOUND');
   return service;
@@ -40,6 +49,7 @@ export async function create(body) {
       name,
       slug,
       category: body?.category ?? null,
+      categoryId: body?.categoryId ?? null,
       summary: body?.summary ?? null,
       description: body?.description ?? null,
       heroImage: body?.heroImage ?? null,
@@ -58,7 +68,7 @@ export async function update(id, body) {
   const db = getPrisma();
   await getById(id); 
   const data = {};
-  for (const k of ['name', 'category', 'summary', 'description', 'heroImage', 'isPublished',
+  for (const k of ['name', 'category', 'categoryId', 'summary', 'description', 'heroImage', 'isPublished',
     'sortOrder', 'supportsServiceRequest', 'supportsMachineryRequest', 'supportsLabourRequest',
     'supportsEstimate', 'estimateMarginPct']) {
     if (body?.[k] !== undefined) data[k] = body[k];
@@ -117,4 +127,35 @@ export async function removeRate(rateId) {
   const existing = await db.serviceRate.findUnique({ where: { id: rateId } });
   if (!existing) throw new ApiError(httpStatus.NOT_FOUND, 'Rate not found', 'RATE_NOT_FOUND');
   await db.serviceRate.delete({ where: { id: rateId } });
+}
+
+
+
+function unlinkImageIfLocal(storedUrl) {
+  if (storedUrl && storedUrl.startsWith(config.uploads.imagesPublicPath)) {
+    const name = storedUrl.slice(config.uploads.imagesPublicPath.length + 1);
+    try { fs.unlinkSync(path.join(config.uploads.imagesDir, name)); } catch { /* ignore */ }
+  }
+}
+
+export async function setImage(id, file) {
+  if (!file) throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'An image file is required', 'IMAGE_REQUIRED');
+  const db = getPrisma();
+  const existing = await db.service.findUnique({ where: { id } });
+  if (!existing) {
+    try { fs.unlinkSync(file.path); } catch { /* ignore */ }
+    throw new ApiError(httpStatus.NOT_FOUND, 'Service not found', 'SERVICE_NOT_FOUND');
+  }
+  const publicPath = `${config.uploads.imagesPublicPath}/${file.filename}`;
+  const updated = await db.service.update({ where: { id }, data: { heroImage: publicPath } });
+  unlinkImageIfLocal(existing.heroImage);
+  return updated;
+}
+
+export async function removeImage(id) {
+  const db = getPrisma();
+  const existing = await db.service.findUnique({ where: { id } });
+  if (!existing) throw new ApiError(httpStatus.NOT_FOUND, 'Service not found', 'SERVICE_NOT_FOUND');
+  if (existing.heroImage) unlinkImageIfLocal(existing.heroImage);
+  return db.service.update({ where: { id }, data: { heroImage: null } });
 }

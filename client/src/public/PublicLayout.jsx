@@ -1,7 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useState } from "react";
 import { PUBLIC_PATHS } from "../shared/constants/routes";
-import useServices from "../shared/hooks/useServices";
+import useCategories from "../shared/hooks/useCategories";
 import logo from "../assets/images/logo.svg";
 import Footer from "./features/home/Footer";
 
@@ -19,7 +19,7 @@ import {
 } from "react-icons/fa";
 
 
-const MAX_DROPDOWN_SERVICES = 6;
+const MAX_DROPDOWN_CATEGORIES = 6;
 
 const NAV_ITEMS = [
   { label: "Home", to: PUBLIC_PATHS.HOME },
@@ -94,14 +94,14 @@ function TopBar() {
 }
 
 function ServicesDropdown() {
-  const { data: services, loading } = useServices();
+  const { data: categories, loading } = useCategories();
 
-  const visibleServices = Array.isArray(services)
-    ? services.slice(0, MAX_DROPDOWN_SERVICES)
+  const visibleCategories = Array.isArray(categories)
+    ? categories.slice(0, MAX_DROPDOWN_CATEGORIES)
     : [];
 
   const hasMore =
-    Array.isArray(services) && services.length > MAX_DROPDOWN_SERVICES;
+    Array.isArray(categories) && categories.length > MAX_DROPDOWN_CATEGORIES;
 
   return (
     <div className="invisible absolute left-0 top-full w-64 translate-y-2 rounded-sm border border-gray-100 bg-white py-2 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
@@ -118,20 +118,20 @@ function ServicesDropdown() {
         <p className="px-5 py-3 text-sm text-gray-400">Loading...</p>
       )}
 
-      {!loading && visibleServices.length === 0 && (
+      {!loading && visibleCategories.length === 0 && (
         <p className="px-5 py-3 text-sm text-gray-400">
-          No services available yet.
+          No categories available yet.
         </p>
       )}
 
       {!loading &&
-        visibleServices.map((service) => (
+        visibleCategories.map((category) => (
           <Link
-            key={service.slug}
-            to={`/services/${encodeURIComponent(service.slug)}`}
+            key={category.slug}
+            to={`${PUBLIC_PATHS.SERVICES}?category=${encodeURIComponent(category.slug)}`}
             className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
           >
-            {service.title}
+            {category.name}
           </Link>
         ))}
 

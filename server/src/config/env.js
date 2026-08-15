@@ -31,7 +31,6 @@ export const config = Object.freeze({
 
   uploads: {
     maxBytes: Number(process.env.UPLOAD_MAX_BYTES) || 10 * 1024 * 1024,
-    dir: process.env.UPLOAD_DIR || 'storage/documents',
     imagesDir: process.env.PROJECT_IMAGES_DIR || 'storage/project-images',
     imagesPublicPath: '/uploads/project-images',
   },

@@ -59,5 +59,21 @@ export default function useAdminServices() {
     setServices((prev) => prev.filter((s) => s.id !== id));
   }, []);
 
-  return { services, service, loading, error, fetchList, fetchOne, create, update, remove };
+  const uploadImage = useCallback(async (id, file) => {
+    const fd = new FormData();
+    fd.append('image', file);
+    const { data } = await api.post(`${RESOURCE}/${encodeURIComponent(id)}/image`, fd, {
+      headers: { 'Content-Type': undefined },
+    });
+    setService((prev) => (prev && prev.id === id ? { ...prev, heroImage: data.heroImage } : prev));
+    return data;
+  }, []);
+
+  const removeImage = useCallback(async (id) => {
+    const { data } = await api.delete(`${RESOURCE}/${encodeURIComponent(id)}/image`);
+    setService((prev) => (prev && prev.id === id ? { ...prev, heroImage: null } : prev));
+    return data;
+  }, []);
+
+  return { services, service, loading, error, fetchList, fetchOne, create, update, remove, uploadImage, removeImage };
 }

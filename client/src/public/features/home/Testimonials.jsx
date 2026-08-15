@@ -1,43 +1,6 @@
 
 import { FaQuoteLeft } from "react-icons/fa";
-
-const TESTIMONIALS = [
-  {
-    id: 1,
-    name: "John Kamau",
-    role: "CEO, Horizon Properties",
-    message:
-      "Komaret delivered our office complex on time and the quality exceeded our expectations. Highly professional team!",
-  },
-  {
-    id: 2,
-    name: "Mary Wanjiku",
-    role: "Director, Wanjiku Homes",
-    message:
-      "Their attention to detail and project management is outstanding. We felt involved at every stage of the construction.",
-  },
-  {
-    id: 3,
-    name: "David Ochieng",
-    role: "Managing Director, Ochieng Developers",
-    message:
-      "Reliable, transparent and innovative. We will definitely work with Komaret again on our next project.",
-  },
-  {
-    id: 4,
-    name: "Grace Njeri",
-    role: "Property Developer",
-    message:
-      "From the initial design to the final handover, the Komaret team was professional, responsive and committed to quality.",
-  },
-  {
-    id: 5,
-    name: "Peter Mwangi",
-    role: "Business Owner",
-    message:
-      "They understood our requirements and delivered exactly what we envisioned. I would highly recommend their services.",
-  },
-];
+import useTestimonials from "../../../shared/hooks/useTestimonials";
 
 function TestimonialCard({ testimonial }) {
   const initials = testimonial.name
@@ -80,10 +43,6 @@ function TestimonialCard({ testimonial }) {
           <p className="text-sm font-bold text-[#071525]">
             {testimonial.name}
           </p>
-
-          <p className="mt-0.5 text-xs text-gray-500">
-            {testimonial.role}
-          </p>
         </div>
       </div>
     </div>
@@ -91,8 +50,15 @@ function TestimonialCard({ testimonial }) {
 }
 
 function Testimonials() {
+  const { data: published } = useTestimonials();
 
-  const testimonials = [...TESTIMONIALS, ...TESTIMONIALS];
+  const source = Array.isArray(published) ? published : [];
+
+  
+  if (source.length === 0) return null;
+
+ 
+  const testimonials = [...source, ...source];
 
   return (
     <section className="overflow-hidden bg-white py-12 sm:py-14">

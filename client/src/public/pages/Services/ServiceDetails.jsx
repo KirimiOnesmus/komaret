@@ -77,7 +77,7 @@ function ServiceDetails() {
             <span>›</span>
 
             <span className="text-white">
-              {service.title}
+              {service.name}
             </span>
 
           </div>
@@ -96,7 +96,7 @@ function ServiceDetails() {
 
 
             <h1 className="mt-2 text-4xl font-bold leading-tight text-white sm:text-5xl">
-              {service.title}
+              {service.name}
             </h1>
 
 
@@ -122,14 +122,16 @@ function ServiceDetails() {
               </Link>
 
 
-              <Link
-                to={estimateUrl}
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-white/30 px-6 py-3 cursor-pointer
-                 text-sm font-semibold text-white transition-colors hover:border-[#f5b400] hover:text-[#f5b400]"
-              >
-                <FaCalculator className="text-xs" />
-                Get Instant Estimate
-              </Link>
+              {service.supports?.estimate && (
+                <Link
+                  to={estimateUrl}
+                  className="inline-flex items-center justify-center gap-2 rounded-md border border-white/30 px-6 py-3 cursor-pointer
+                   text-sm font-semibold text-white transition-colors hover:border-[#f5b400] hover:text-[#f5b400]"
+                >
+                  <FaCalculator className="text-xs" />
+                  Get Instant Estimate
+                </Link>
+              )}
 
             </div>
 
@@ -292,14 +294,16 @@ function ServiceDetails() {
                     </Link>
 
 
-                    <Link
-                      to={estimateUrl}
-                      className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-600 px-5 py-3 cursor-pointer 
-                      text-sm font-semibold text-white transition-colors hover:border-[#f5b400] hover:text-[#f5b400]"
-                    >
-                      <FaCalculator className="text-xs" />
-                      Get an Instant Estimate
-                    </Link>
+                    {service.supports?.estimate && (
+                      <Link
+                        to={estimateUrl}
+                        className="flex w-full items-center justify-center gap-2 rounded-md border border-gray-600 px-5 py-3 cursor-pointer 
+                        text-sm font-semibold text-white transition-colors hover:border-[#f5b400] hover:text-[#f5b400]"
+                      >
+                        <FaCalculator className="text-xs" />
+                        Get an Instant Estimate
+                      </Link>
+                    )}
 
                   </div>
 

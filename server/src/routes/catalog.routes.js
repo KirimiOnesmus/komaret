@@ -1,6 +1,7 @@
 
 import { Router } from 'express';
 import * as controller from '../controllers/catalog.controller.js';
+import { imageUpload } from '../middleware/upload.js';
 
 const router = Router();
 
@@ -10,6 +11,10 @@ router.post('/', controller.create);
 router.get('/:id', controller.getById);
 router.patch('/:id', controller.update);
 router.delete('/:id', controller.remove);
+
+// Single hero image (item 3)
+router.post('/:id/image', imageUpload.single('image'), controller.setImage);
+router.delete('/:id/image', controller.removeImage);
 
 // Rate card
 router.get('/:id/rates', controller.listRates);

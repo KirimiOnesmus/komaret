@@ -9,6 +9,7 @@ import {
 
 import Loading from '../../../shared/components/common/Loading';
 import publicService from '../../../shared/services/publicService';
+import { mediaUrl } from '../../../shared/utils/mediaUrl';
 import { PUBLIC_PATHS } from '../../../shared/constants/routes';
 
 
@@ -72,6 +73,9 @@ function ProjectDetails() {
     return null;
   }
 
+  const images = project.images || [];
+  const cover = images.find((i) => i.isCover) || images[0];
+  const coverUrl = cover ? mediaUrl(cover.path) : null;
 
   return (
     <div className="bg-white">
@@ -105,7 +109,7 @@ function ProjectDetails() {
               <span>›</span>
 
               <span className="truncate text-white">
-                {project.title}
+                {project.name}
               </span>
 
             </div>
@@ -114,12 +118,12 @@ function ProjectDetails() {
 
 
    
-          {project.coverImageUrl && (
+          {coverUrl && (
             <div className="relative overflow-hidden rounded-t-xl">
 
               <img
-                src={project.coverImageUrl}
-                alt={project.title}
+                src={coverUrl}
+                alt={project.name}
                 className="h-[300px] w-full object-cover sm:h-[420px] lg:h-[520px]"
               />
 
@@ -149,7 +153,7 @@ function ProjectDetails() {
 
 
               <h1 className="mt-2 text-3xl font-bold leading-tight text-[#071525] sm:text-4xl">
-                {project.title}
+                {project.name}
               </h1>
 
 

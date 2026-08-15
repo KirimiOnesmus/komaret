@@ -3,6 +3,7 @@ import { getPrisma } from '../../config/db.js';
 import { parsePagination } from '../../utils/pagination.js';
 import { ApiError } from '../../utils/ApiError.js';
 import httpStatus from '../../utils/httpStatus.js';
+import { buildReceiptPdf } from '../invoicing/pdf.js';
 
 export async function list(query) {
   const db = getPrisma();
@@ -83,6 +84,41 @@ export async function remove(id) {
   const db = getPrisma();
   if (!(await db.payment.findUnique({ where: { id } }))) throw new ApiError(httpStatus.NOT_FOUND, 'Payment not found', 'PAYMENT_NOT_FOUND');
   await db.payment.delete({ where: { id } });
+}
+
+
+
+export async function renderReceipt(id) {
+  const db = getPrisma();
+  const payment = await db.payment.findUnique({
+    where: { id },
+    include: { client: true, project: { include: { client: true } }, invoice: true },
+  });
+  if (!payment) throw new ApiError(httpStatus.NOT_FOUND, 'Payment not found', 'PAYMENT_NOT_FOUND');
+
+  if (payment.invoiceId) {
+    const inv = await db.invoice.findUnique({
+      where: { id: payment.invoiceId },
+      include: { client: true, payments: { orderBy: { paidAt: 'desc' } } },
+    });
+    if (inv) {
+      const buffer = await buildReceiptPdf(inv, inv.payments);
+      return { buffer, filename: `${inv.number}-receipt.pdf` };
+    }
+  }
+
+  const client = payment.client || payment.project?.client || { name: '—' };
+  const number = payment.reference || `RCP-${payment.id.slice(-6).toUpperCase()}`;
+  const shape = {
+    number,
+    currency: payment.currency,
+    total: payment.amount, // single payment → total = amount, balance 0 (PAID IN FULL)
+    status: 'RECEIPT',
+    createdAt: payment.paidAt,
+    client,
+  };
+  const buffer = await buildReceiptPdf(shape, [payment]);
+  return { buffer, filename: `${number}-receipt.pdf` };
 }
 
 export async function projectSummary(projectId) {

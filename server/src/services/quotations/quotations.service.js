@@ -3,7 +3,8 @@ import crypto from 'node:crypto';
 import { getPrisma } from '../../config/db.js';
 import { config } from '../../config/env.js';
 import { parsePagination } from '../../utils/pagination.js';
-import { renderQuotationPdf } from '../../utils/pdf/quotationPdf.js';
+import { renderQuotationPdf, renderQuotationPdfBuffer } from '../../utils/pdf/quotationPdf.js';
+import { sendEmail } from '../communications/providers/email.provider.js';
 import { ApiError } from '../../utils/ApiError.js';
 import httpStatus from '../../utils/httpStatus.js';
 
@@ -200,6 +201,30 @@ export async function renderPdf(id) {
   return { stream: renderQuotationPdf(q), filename: `${q.number}.pdf` };
 }
 
+
+export async function sendToClient(id) {
+  const q = await getById(id);
+  if (!q.client?.email) {
+    throw new ApiError(httpStatus.UNPROCESSABLE_ENTITY, 'This client has no email address to send the quotation to', 'NO_CLIENT_EMAIL');
+  }
+  const buffer = await renderQuotationPdfBuffer(q);
+  await sendEmail({
+    to: q.client.email,
+    subject: `Quotation ${q.number} — ${config.company?.name || ''}`.trim(),
+    text:
+      `Dear ${q.client.name},\n\n` +
+      `Please find attached quotation ${q.number} for ${q.currency} ${Number(q.total).toLocaleString()}.\n\n` +
+      `Warm regards,\n${config.company?.name || 'our team'}`,
+    attachments: [{ filename: `${q.number}.pdf`, content: buffer }],
+  });
+
+  const db = getPrisma();
+  const data = q.status === 'DRAFT' ? { status: 'SENT' } : {};
+  const updated = Object.keys(data).length
+    ? await db.quotation.update({ where: { id }, data })
+    : q;
+  return { sent: true, to: q.client.email, status: updated.status };
+}
 
 export async function draftItems(body) {
   const description = body?.description?.trim();
