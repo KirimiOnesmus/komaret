@@ -256,7 +256,7 @@ function Projects() {
           )}
 
 
-          {/* Error */}
+         
           {error && (
             <div className="mt-8 rounded-md border border-red-100 bg-red-50 p-5 text-sm text-red-600">
               {error}

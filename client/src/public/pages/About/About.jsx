@@ -336,7 +336,7 @@ function About() {
             </div>
 
 
-            {/* Satisfaction */}
+          
             <div>
               <FaHandshake className="text-3xl text-[#f5b400]" />
 

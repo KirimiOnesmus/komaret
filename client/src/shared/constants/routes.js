@@ -1,8 +1,5 @@
 import { ROLES } from './roles';
 
-/**
- * Public marketing-site paths.
- */
 export const PUBLIC_PATHS = Object.freeze({
   HOME: '/',
   ABOUT: '/about',
@@ -20,10 +17,7 @@ export const PUBLIC_PATHS = Object.freeze({
   QUOTE: '/quote',
 });
 
-/**
- * Admin (back-office) paths. All are mounted under /admin and, except
- * for the auth pages, sit behind AdminRoutes' authentication guard.
- */
+
 export const ADMIN_PATHS = Object.freeze({
   LOGIN: '/admin/login',
   FORGOT_PASSWORD: '/admin/forgot-password',
@@ -36,14 +30,19 @@ export const ADMIN_PATHS = Object.freeze({
   PROJECT_CREATE: '/admin/projects/new',
   PROJECT_EDIT: '/admin/projects/:id/edit',
 
-  MACHINERY: '/admin/machinery',
-  MACHINERY_DETAILS: '/admin/machinery/:id',
+  SERVICES: '/admin/services',
+  SERVICE_CREATE: '/admin/services/new',
+  SERVICE_DETAILS: '/admin/services/:id',
+  SERVICE_EDIT: '/admin/services/:id/edit',
 
-  LABOUR: '/admin/labour',
+  MACHINERY: '/admin/services/machinery',
+  MACHINERY_CREATE: '/admin/services/machinery/new',
+  MACHINERY_DETAILS: '/admin/services/machinery/:id',
+  MACHINERY_EDIT: '/admin/services/machinery/:id/edit',
 
-  INTERIOR_DESIGN: '/admin/interior-design',
-  RENOVATIONS: '/admin/renovations',
-  REAL_ESTATE: '/admin/real-estate',
+  LABOUR: '/admin/services/labour',
+  LABOUR_CREATE: '/admin/services/labour/new',
+  LABOUR_EDIT: '/admin/services/labour/:id/edit',
 
   QUOTATIONS: '/admin/quotations',
   QUOTATION_DETAILS: '/admin/quotations/:id',
@@ -53,16 +52,51 @@ export const ADMIN_PATHS = Object.freeze({
   CRM: '/admin/crm',
   SERVICE_REQUESTS: '/admin/service-requests',
   COMMUNICATIONS: '/admin/communications',
-  DOCUMENTS: '/admin/documents',
+  Payments: '/admin/payments',
 
   REPORTS: '/admin/reports',
   SETTINGS: '/admin/settings',
 });
 
-// Admin routes with no entry here are open to any authenticated admin
-// user; this list only drives which nav items/routes are further
-// restricted by role. The backend enforces the real RBAC boundary.
+
+export const ADMIN_ROUTE_PATHS = Object.freeze({
+  LOGIN: 'login',
+  FORGOT_PASSWORD: 'forgot-password',
+  RESET_PASSWORD: 'reset-password',
+
+  DASHBOARD: '',
+
+  PROJECTS: 'projects',
+  PROJECT_DETAILS: 'projects/:id',
+  PROJECT_CREATE: 'projects/new',
+  PROJECT_EDIT: 'projects/:id/edit',
+
+  SERVICES: 'services',
+  SERVICE_CREATE: 'services/new',
+  SERVICE_DETAILS: 'services/:id',
+  SERVICE_EDIT: 'services/:id/edit',
+  MACHINERY: 'services/machinery',
+  MACHINERY_CREATE: 'services/machinery/new',
+  MACHINERY_DETAILS: 'services/machinery/:id',
+  MACHINERY_EDIT: 'services/machinery/:id/edit',
+  LABOUR: 'services/labour',
+  LABOUR_CREATE: 'services/labour/new',
+  LABOUR_EDIT: 'services/labour/:id/edit',
+
+  QUOTATIONS: 'quotations',
+  QUOTATION_DETAILS: 'quotations/:id',
+  QUOTATION_CREATE: 'quotations/new',
+  QUOTATION_EDIT: 'quotations/:id/edit',
+
+  CRM: 'crm',
+  SERVICE_REQUESTS: 'service-requests',
+  COMMUNICATIONS: 'communications',
+  Payments: 'payments',
+  REPORTS: 'reports',
+  SETTINGS: 'settings',
+});
+
 export const ADMIN_ROUTE_ROLES = Object.freeze({
-  [ADMIN_PATHS.REPORTS]: [ROLES.ADMIN, ROLES.MANAGER],
-  [ADMIN_PATHS.SETTINGS]: [ROLES.ADMIN],
+  [ADMIN_PATHS.REPORTS]: [ROLES.OWNER, ROLES.ADMIN],
+  [ADMIN_PATHS.SETTINGS]: [ROLES.OWNER, ROLES.ADMIN],
 });

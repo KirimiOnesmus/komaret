@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useState } from "react";
 import { PUBLIC_PATHS } from "../shared/constants/routes";
+import useServices from "../shared/hooks/useServices";
 import logo from "../assets/images/logo.svg";
 import Footer from "./features/home/Footer";
 
@@ -16,6 +17,9 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
+
+
+const MAX_DROPDOWN_SERVICES = 6;
 
 const NAV_ITEMS = [
   { label: "Home", to: PUBLIC_PATHS.HOME },
@@ -89,6 +93,60 @@ function TopBar() {
   );
 }
 
+function ServicesDropdown() {
+  const { data: services, loading } = useServices();
+
+  const visibleServices = Array.isArray(services)
+    ? services.slice(0, MAX_DROPDOWN_SERVICES)
+    : [];
+
+  const hasMore =
+    Array.isArray(services) && services.length > MAX_DROPDOWN_SERVICES;
+
+  return (
+    <div className="invisible absolute left-0 top-full w-64 translate-y-2 rounded-sm border border-gray-100 bg-white py-2 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
+      <Link
+        to={PUBLIC_PATHS.SERVICES}
+        className="block px-5 py-3 text-sm font-semibold text-[#e9a900] transition-colors hover:bg-gray-50"
+      >
+        All Services
+      </Link>
+
+      <div className="my-1 border-t border-gray-100" />
+
+      {loading && (
+        <p className="px-5 py-3 text-sm text-gray-400">Loading...</p>
+      )}
+
+      {!loading && visibleServices.length === 0 && (
+        <p className="px-5 py-3 text-sm text-gray-400">
+          No services available yet.
+        </p>
+      )}
+
+      {!loading &&
+        visibleServices.map((service) => (
+          <Link
+            key={service.slug}
+            to={`/services/${encodeURIComponent(service.slug)}`}
+            className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
+          >
+            {service.title}
+          </Link>
+        ))}
+
+      {hasMore && (
+        <Link
+          to={PUBLIC_PATHS.SERVICES}
+          className="block px-5 py-3 text-xs font-semibold uppercase tracking-wide text-gray-400 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
+        >
+          View all services
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function PublicHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -132,37 +190,7 @@ function PublicHeader() {
                   )}
                 </NavLink>
 
-                {item.dropdown && (
-                  <div className="invisible absolute left-0 top-full w-56 translate-y-2 rounded-sm border border-gray-100 bg-white py-2 opacity-0 shadow-lg transition-all duration-200 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100">
-                    <Link
-                      to={PUBLIC_PATHS.SERVICES}
-                      className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
-                    >
-                      All Services
-                    </Link>
-
-                    <Link
-                      to={PUBLIC_PATHS.SERVICES}
-                      className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
-                    >
-                      Construction
-                    </Link>
-
-                    <Link
-                      to={PUBLIC_PATHS.SERVICES}
-                      className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
-                    >
-                      Architectural Design
-                    </Link>
-
-                    <Link
-                      to={PUBLIC_PATHS.SERVICES}
-                      className="block px-5 py-3 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-[#e9a900]"
-                    >
-                      Project Management
-                    </Link>
-                  </div>
-                )}
+                {item.dropdown && <ServicesDropdown />}
               </div>
             ))}
           </nav>

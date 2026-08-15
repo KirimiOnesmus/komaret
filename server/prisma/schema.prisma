@@ -1,0 +1,674 @@
+// Construction & Property Management Platform — service-driven data model.
+//
+// Principle (from the system flow): the platform is SERVICE-DRIVEN, not
+// page-driven. `Service` is the spine — requests, quotations and projects all
+// reference a service, so new offerings are added as service rows, never new
+// code paths. Machinery and Labour are reusable resources assigned to projects.
+// Public-facing reads must expose only public-safe fields (see visibility notes).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================ Enums ============================
+
+enum Role {
+  OWNER
+  ADMIN
+}
+
+enum RequestType {
+  SERVICE
+  MACHINERY
+  LABOUR
+  ESTIMATE
+}
+
+enum ServiceRequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  QUOTED
+  ACCEPTED
+  REJECTED
+  CLOSED
+  CONVERTED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  UNDER_REVIEW
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CONVERTED
+}
+
+enum ProjectStatus {
+  PENDING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+enum MachineryStatus {
+  AVAILABLE
+  RESERVED
+  HIRED
+  IN_USE
+  MAINTENANCE
+  UNAVAILABLE
+}
+
+enum LabourRole {
+  SITE_MANAGER
+  FOREMAN
+  PLUMBER
+  ELECTRICIAN
+  MASON
+  CARPENTER
+  PAINTER
+  GENERAL
+  OTHER
+}
+
+enum LabourStatus {
+  AVAILABLE
+  ASSIGNED
+  UNAVAILABLE
+  INACTIVE
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  LOST
+}
+
+enum Channel {
+  WHATSAPP
+  EMAIL
+}
+
+enum DiscountType {
+  NONE
+  PERCENT
+  FIXED
+}
+
+enum NotificationRecipientType {
+  LABOUR
+  CLIENT
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENDING
+  SENT
+  FAILED
+}
+
+// ======================= Auth (login accounts) =======================
+
+model User {
+  id              String    @id @default(cuid())
+  role            Role      @default(ADMIN)
+  name            String
+  email           String    @unique
+  passwordHash    String
+  isActive        Boolean   @default(true)
+  emailVerifiedAt DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  refreshTokens     RefreshToken[]
+  quotationsCreated Quotation[]       @relation("QuotationCreatedBy")
+  projectsCreated   Project[]         @relation("ProjectCreatedBy")
+  activities        ProjectActivity[] @relation("ActivityCreatedBy")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ======================= Service catalogue (spine) =======================
+
+model Service {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  category    String?
+  summary     String?
+  description String? @db.Text
+  heroImage   String? // public showcase image path
+  isPublished Boolean @default(true) // public visibility
+  sortOrder   Int     @default(0)
+
+  // Which public request types this service accepts (§4 "where applicable").
+  supportsServiceRequest   Boolean @default(true)
+  supportsMachineryRequest Boolean @default(false)
+  supportsLabourRequest    Boolean @default(false)
+  supportsEstimate         Boolean @default(false)
+  estimateMarginPct        Decimal @default(10) @db.Decimal(5, 2) // ± band on indicative estimates
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requests   ServiceRequest[]
+  quotations Quotation[]
+  projects   Project[]
+  leads      Lead[]
+  rates      ServiceRate[]
+}
+
+// Admin-editable rate card behind each service. Drives the instant public
+// estimate: the estimate multiplies user-entered quantities by these unit prices.
+model ServiceRate {
+  id         String   @id @default(cuid())
+  serviceId  String
+  label      String // "Flooring (per m²)", "Excavator (per day)"
+  unit       String // m2 | day | room | unit | hour | trip ...
+  unitPrice  Decimal  @db.Decimal(12, 2)
+  minQty     Decimal? @db.Decimal(12, 2)
+  defaultQty Decimal? @db.Decimal(12, 2)
+  isActive   Boolean  @default(true)
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+}
+
+// ======================= Clients & CRM =======================
+
+model Client {
+  id               String   @id @default(cuid())
+  name             String
+  companyName      String?
+  email            String?
+  whatsappPhone    String?
+  preferredChannel Channel  @default(WHATSAPP)
+  address          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Rule: at least one of {email, whatsappPhone} — enforced in service layer.
+
+  serviceRequests ServiceRequest[]
+  quotations      Quotation[]
+  projects        Project[]
+  notifications   Notification[]
+  leads           Lead[]
+  followUps       FollowUp[]
+  payments        Payment[]
+  invoices        Invoice[]
+}
+
+model Lead {
+  id        String     @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  source    String?
+  serviceId String?
+  status    LeadStatus @default(NEW)
+  notes     String?    @db.Text
+  clientId  String? // set when converted to a client
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  service   Service?   @relation(fields: [serviceId], references: [id])
+  client    Client?    @relation(fields: [clientId], references: [id])
+  followUps FollowUp[]
+
+  @@index([status])
+}
+
+model FollowUp {
+  id          String    @id @default(cuid())
+  leadId      String?
+  clientId    String?
+  dueDate     DateTime?
+  note        String    @db.Text
+  done        Boolean   @default(false)
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([done])
+}
+
+// Public "Contact / Company Information" form submissions.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  subject   String?
+  message   String   @db.Text
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ======================= Public requests (unified) =======================
+
+model ServiceRequest {
+  id           String               @id @default(cuid())
+  reference    String               @unique
+  type         RequestType          @default(SERVICE)
+  serviceId    String
+  contactName  String
+  contactEmail String?
+  contactPhone String?
+  description  String?              @db.Text
+  location     String?
+  status       ServiceRequestStatus @default(SUBMITTED)
+
+  // Machinery-request specifics (nullable).
+  requestedStart      DateTime?
+  requestedEnd        DateTime?
+  requestedMachineryId String?
+
+  // Labour-request specifics (nullable).
+  requestedRole     String?
+  requestedQuantity Int?
+
+  // Estimate + extensibility.
+  estimateMin Decimal? @db.Decimal(12, 2)
+  estimateMax Decimal? @db.Decimal(12, 2)
+  metadata    Json? // service-specific extras without schema changes
+
+  clientId  String? // linked on acceptance/conversion
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  service            Service     @relation(fields: [serviceId], references: [id])
+  client             Client?     @relation(fields: [clientId], references: [id])
+  requestedMachinery Machinery?  @relation(fields: [requestedMachineryId], references: [id])
+  quotations         Quotation[]
+  project            Project?
+  documents          Document[]
+
+  @@index([status])
+  @@index([serviceId])
+}
+
+// ======================= Quotations + BOQ =======================
+
+model Quotation {
+  id               String          @id @default(cuid())
+  number           String          @unique
+  serviceId        String
+  clientId         String
+  serviceRequestId String?
+  status           QuotationStatus @default(DRAFT)
+  currency         String          @default("KES")
+  subtotal         Decimal         @default(0) @db.Decimal(12, 2)
+  discountType     DiscountType    @default(NONE)
+  discountValue    Decimal         @default(0) @db.Decimal(12, 2)
+  taxRatePct       Decimal         @default(16) @db.Decimal(5, 2)
+  taxAmount        Decimal         @default(0) @db.Decimal(12, 2)
+  total            Decimal         @default(0) @db.Decimal(12, 2)
+  notes            String?         @db.Text
+  validUntil       DateTime?
+  createdById      String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  service        Service         @relation(fields: [serviceId], references: [id])
+  client         Client          @relation(fields: [clientId], references: [id])
+  serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id])
+  createdBy      User            @relation("QuotationCreatedBy", fields: [createdById], references: [id])
+  items          QuotationItem[]
+  documents      Document[]
+  project        Project?
+  payments       Payment[]
+  invoices       Invoice[]
+
+  @@index([clientId])
+  @@index([status])
+}
+
+model QuotationItem {
+  id          String  @id @default(cuid())
+  quotationId String
+  description String
+  unit        String?
+  quantity    Decimal @default(1) @db.Decimal(12, 2)
+  unitPrice   Decimal @default(0) @db.Decimal(12, 2)
+  lineTotal   Decimal @default(0) @db.Decimal(12, 2)
+  sortOrder   Int     @default(0)
+
+  quotation Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+
+  @@index([quotationId])
+}
+
+// ======================= Projects (central record) =======================
+
+model Project {
+  id               String        @id @default(cuid())
+  code             String        @unique
+  name             String
+  serviceId        String
+  clientId         String
+  serviceRequestId String?       @unique
+  quotationId      String?       @unique
+  status           ProjectStatus @default(PENDING)
+  budget           Decimal?      @db.Decimal(14, 2)
+  location         String?
+  description      String?       @db.Text
+  publicSummary    String?       @db.Text // public-safe high-level progress
+  progressPct      Int           @default(0)
+  startDate        DateTime?
+  expectedEndDate  DateTime?
+  actualEndDate    DateTime?
+  createdById      String
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  service        Service            @relation(fields: [serviceId], references: [id])
+  client         Client             @relation(fields: [clientId], references: [id])
+  serviceRequest ServiceRequest?    @relation(fields: [serviceRequestId], references: [id])
+  quotation      Quotation?         @relation(fields: [quotationId], references: [id])
+  createdBy      User               @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  machinery      ProjectMachinery[]
+  labour         ProjectLabour[]
+  documents      Document[]
+  activities     ProjectActivity[]
+  images         ProjectImage[]
+  notifications  Notification[]
+  payments       Payment[]
+  invoices       Invoice[]
+
+  @@index([clientId])
+  @@index([serviceId])
+  @@index([status])
+}
+
+// Several images per project — public "Projects / Portfolio" showcase.
+model ProjectImage {
+  id         String   @id @default(cuid())
+  projectId  String
+  filename   String
+  storedName String
+  path       String
+  mimeType   String
+  sizeBytes  Int
+  caption    String?
+  sortOrder  Int      @default(0)
+  isCover    Boolean  @default(false)
+  showcase   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+// Operational history + progress. Public-safe rows may surface on the client
+// side; a PROGRESS-type row is what triggers a client progress notification.
+model ProjectActivity {
+  id          String   @id @default(cuid())
+  projectId   String
+  type        String // STATUS_CHANGE | PROGRESS | NOTE | ASSIGNMENT | DOCUMENT | EVENT
+  title       String
+  detail      String?  @db.Text
+  progressPct Int?
+  isPublic    Boolean  @default(false)
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("ActivityCreatedBy", fields: [createdById], references: [id])
+
+  @@index([projectId])
+}
+
+// ======================= Machinery (reusable resource) =======================
+
+model Machinery {
+  id          String          @id @default(cuid())
+  name        String
+  type        String?
+  description String?         @db.Text
+  hireRate    Decimal?        @db.Decimal(12, 2)
+  hireTerms   String?
+  status      MachineryStatus @default(AVAILABLE)
+  isPublic    Boolean         @default(true) // shown in public catalogue
+  imagePath   String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  projectAssignments ProjectMachinery[]
+  requests           ServiceRequest[]
+
+  @@index([status])
+}
+
+model ProjectMachinery {
+  id          String    @id @default(cuid())
+  projectId   String
+  machineryId String
+  startDate   DateTime?
+  endDate     DateTime?
+  rate        Decimal?  @db.Decimal(12, 2)
+  status      String    @default("allocated") // allocated | in_use | returned
+  assignedAt  DateTime  @default(now())
+  releasedAt  DateTime?
+
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  machinery Machinery @relation(fields: [machineryId], references: [id])
+
+  @@index([projectId])
+  @@index([machineryId])
+}
+
+// ======================= Labour (internal personnel) =======================
+// Includes site managers. Private fields (phone, email, internalRate) are
+// NEVER exposed publicly. Public sees only "Labour assigned to your project".
+
+model Labour {
+  id           String       @id @default(cuid())
+  name         String
+  role         LabourRole   @default(OTHER)
+  skill        String? // free-text specialisation when role = OTHER
+  phone        String? // WhatsApp for site managers — private
+  email        String? // private
+  internalRate Decimal?     @db.Decimal(12, 2) // private
+  status       LabourStatus @default(AVAILABLE)
+  notes        String?      @db.Text
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  assignments   ProjectLabour[]
+  notifications Notification[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model ProjectLabour {
+  id           String    @id @default(cuid())
+  projectId    String
+  labourId     String
+  projectRole  String? // role on this specific project
+  assignedById String?
+  assignedAt   DateTime  @default(now())
+  releasedAt   DateTime?
+  active       Boolean   @default(true)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  labour  Labour  @relation(fields: [labourId], references: [id])
+
+  @@unique([projectId, labourId])
+  @@index([labourId])
+}
+
+// ======================= Documents =======================
+// Internal by default (admin-only); public only when deliberately shared.
+
+model Document {
+  id               String   @id @default(cuid())
+  filename         String
+  storedName       String
+  path             String
+  mimeType         String
+  sizeBytes        Int
+  category         String? // contract | drawing | quotation | approval | other
+  isPublic         Boolean  @default(false)
+  projectId        String?
+  serviceRequestId String?
+  quotationId      String?
+  uploadedById     String?
+  createdAt        DateTime @default(now())
+
+  project        Project?        @relation(fields: [projectId], references: [id])
+  serviceRequest ServiceRequest? @relation(fields: [serviceRequestId], references: [id])
+  quotation      Quotation?      @relation(fields: [quotationId], references: [id])
+
+  @@index([projectId])
+}
+
+// ======================= Payments (operational tracking only) =======================
+// Records money received against a project/quotation/client so the admin can
+// track paid vs outstanding. NOT accounting — no ledgers, invoices, or tax.
+model Payment {
+  id           String   @id @default(cuid())
+  projectId    String?
+  quotationId  String?
+  clientId     String?
+  invoiceId    String?
+  amount       Decimal  @db.Decimal(14, 2)
+  currency     String   @default("KES")
+  method       String? // cash | mpesa | bank | cheque | other
+  reference    String? // transaction / M-Pesa code
+  paidAt       DateTime @default(now())
+  note         String?  @db.Text
+  recordedById String?
+  createdAt    DateTime @default(now())
+
+  project   Project?   @relation(fields: [projectId], references: [id])
+  quotation Quotation? @relation(fields: [quotationId], references: [id])
+  client    Client?    @relation(fields: [clientId], references: [id])
+  invoice   Invoice?   @relation(fields: [invoiceId], references: [id])
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([invoiceId])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIAL
+  PAID
+  CANCELLED
+}
+
+// ======================= Invoices (tax invoice) =======================
+// A tax invoice with VAT breakdown, rendered to PDF (invoice + receipt).
+// Operational — not a full accounting ledger.
+model Invoice {
+  id          String        @id @default(cuid())
+  number      String        @unique // INV-YYYY-XXXXXX
+  clientId    String
+  projectId   String?
+  quotationId String?
+  currency    String        @default("KES")
+  status      InvoiceStatus @default(DRAFT)
+
+  // Tax breakdown (prices are tax-EXCLUSIVE; VAT added on top).
+  subtotal  Decimal @default(0) @db.Decimal(14, 2) // net of VAT
+  vatAmount Decimal @default(0) @db.Decimal(14, 2)
+  total     Decimal @default(0) @db.Decimal(14, 2) // gross
+
+  // Parties (a Kenyan tax invoice shows the seller PIN; buyer PIN optional)
+  sellerPin String?
+  buyerPin  String?
+
+  issuedAt    DateTime?
+  notes       String?   @db.Text
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  client    Client        @relation(fields: [clientId], references: [id])
+  project   Project?      @relation(fields: [projectId], references: [id])
+  quotation Quotation?    @relation(fields: [quotationId], references: [id])
+  items     InvoiceItem[]
+  payments  Payment[]
+
+  @@index([status])
+  @@index([clientId])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  description String
+  unit        String?
+  quantity    Decimal @default(1) @db.Decimal(12, 2)
+  unitPrice   Decimal @default(0) @db.Decimal(12, 2) // tax-exclusive
+  taxCode     String  @default("B") // KRA VAT class: A exempt, B 16%, C 0%/zero, D non-VAT, E 8%
+  taxRatePct  Decimal @default(16) @db.Decimal(5, 2)
+  lineNet     Decimal @default(0) @db.Decimal(14, 2)
+  lineVat     Decimal @default(0) @db.Decimal(14, 2)
+  lineTotal   Decimal @default(0) @db.Decimal(14, 2)
+  sortOrder   Int     @default(0)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// ======================= Notifications (queue + log) =======================
+
+model Notification {
+  id                String                    @id @default(cuid())
+  recipientType     NotificationRecipientType
+  labourId          String? // site manager (a Labour record)
+  clientId          String?
+  channel           Channel
+  templateType      String // "manager_assignment" | "project_progress" | ...
+  payload           Json
+  status            NotificationStatus        @default(QUEUED)
+  attempts          Int                       @default(0)
+  providerMessageId String?
+  error             String?                   @db.Text
+  projectId         String?
+  quotationId       String?
+  scheduledAt       DateTime                  @default(now())
+  sentAt            DateTime?
+  createdAt         DateTime                  @default(now())
+
+  labour  Labour?  @relation(fields: [labourId], references: [id])
+  client  Client?  @relation(fields: [clientId], references: [id])
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([status])
+  @@index([recipientType])
+}

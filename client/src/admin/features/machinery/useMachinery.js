@@ -40,5 +40,22 @@ export default function useMachinery() {
     }
   }, []);
 
-  return { machines, machine, loading, error, fetchList, fetchOne };
+  const create = useCallback(async (payload) => {
+    const { data } = await api.post(RESOURCE, payload);
+    return data;
+  }, []);
+
+  const update = useCallback(async (id, payload) => {
+    const { data } = await api.patch(`${RESOURCE}/${encodeURIComponent(id)}`, payload);
+    setMachine(data);
+    setMachines((prev) => prev.map((m) => (m.id === id ? data : m)));
+    return data;
+  }, []);
+
+  const remove = useCallback(async (id) => {
+    await api.delete(`${RESOURCE}/${encodeURIComponent(id)}`);
+    setMachines((prev) => prev.filter((m) => m.id !== id));
+  }, []);
+
+  return { machines, machine, loading, error, fetchList, fetchOne, create, update, remove };
 }

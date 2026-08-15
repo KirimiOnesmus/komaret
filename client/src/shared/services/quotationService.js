@@ -9,11 +9,14 @@ const quotationService = {
   update: (id, payload) => api.patch(`${RESOURCE}/${encodeURIComponent(id)}`, payload),
   remove: (id) => api.delete(`${RESOURCE}/${encodeURIComponent(id)}`),
 
-  /** Transition a quotation's status (new/reviewing/approved/converted/closed).*/
+
   updateStatus: (id, status) =>
     api.patch(`${RESOURCE}/${encodeURIComponent(id)}/status`, { status }),
 
-  /** Convert an approved service request into a draft quotation. */
+
+  downloadPdf: (id) => api.get(`${RESOURCE}/${encodeURIComponent(id)}/pdf`, { responseType: 'blob' }),
+
+
   createFromServiceRequest: (serviceRequestId) =>
     api.post(`${RESOURCE}/from-service-request/${encodeURIComponent(serviceRequestId)}`),
 };

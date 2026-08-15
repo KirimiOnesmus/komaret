@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../../../shared/components/ui/PageContainer';
+import Breadcrumbs from '../../../shared/components/ui/Breadcrumbs';
 import QuotationForm from '../../features/quotations/QuotationForm';
 import useQuotation from '../../../shared/hooks/useQuotation';
+import { ADMIN_PATHS } from '../../../shared/constants/routes';
 
 function CreateQuotation() {
   const navigate = useNavigate();
@@ -10,11 +12,11 @@ function CreateQuotation() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (payload) => {
     setSubmitting(true);
     setError('');
     try {
-      const created = await create(values);
+      const created = await create(payload);
       navigate(`/admin/quotations/${created.id}`, { replace: true });
     } catch (err) {
       setError(err.message || 'Unable to create the quotation.');
@@ -24,9 +26,11 @@ function CreateQuotation() {
   };
 
   return (
-    <PageContainer title="New quotation">
-      {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      <QuotationForm onSubmit={handleSubmit} submitting={submitting} />
+    <PageContainer
+      title="New quotation"
+      breadcrumbs={<Breadcrumbs items={[{ label: 'Quotations', to: ADMIN_PATHS.QUOTATIONS }, { label: 'New quotation' }]} />}
+    >
+      <QuotationForm mode="create" onSubmit={handleSubmit} submitting={submitting} submitError={error} />
     </PageContainer>
   );
 }

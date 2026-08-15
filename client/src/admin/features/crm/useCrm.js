@@ -34,5 +34,9 @@ export default function useCrm() {
     }
   }, []);
 
-  return { leads, clients, loading, error, fetchLeads, fetchClients };
+  const convertLead = useCallback(async (id) => {
+    await crmService.convertLead(id);
+  }, []);
+
+  return { leads, clients, loading, error, fetchLeads, fetchClients, convertLead };
 }

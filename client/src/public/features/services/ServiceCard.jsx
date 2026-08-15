@@ -15,7 +15,7 @@ import {
 const SERVICE_ICONS = {
   construction: FaBuilding,
   "machinery-hire": FaHardHat,
-  "labor-management": FaUsers,
+  "labor-management": FaUsers, 
   "interior-design": FaCouch,
   renovations: FaTools,
   "real-estate-development": FaHome,

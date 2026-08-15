@@ -7,6 +7,10 @@ import {
 
 function ProjectCard({ project }) {
 
+  if (!project) {
+    return null;
+  }
+
   const status = project.status || 'Completed';
 
   const category =

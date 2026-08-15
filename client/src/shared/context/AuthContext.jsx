@@ -57,7 +57,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   const hasRole = useCallback(
-    (role) => Array.isArray(state.user?.roles) && state.user.roles.includes(role),
+    (role) => {
+      const u = state.user;
+      if (!u || !role) return false;
+      const target = String(role).toUpperCase();
+      if (Array.isArray(u.roles)) {
+        return u.roles.some((r) => String(r).toUpperCase() === target);
+      }
+      return u.role ? String(u.role).toUpperCase() === target : false;
+    },
     [state.user]
   );
 

@@ -8,17 +8,23 @@ import Button from '../../../shared/components/common/Button';
 import useQuotationsList from '../../features/quotations/useQuotationsList';
 import { ADMIN_PATHS } from '../../../shared/constants/routes';
 import { formatCurrency } from '../../../shared/utils/formatters';
+import { QUOTATION_STATUS_LABELS } from '../../../shared/constants/app';
 
 const COLUMNS = [
-  { key: 'title', label: 'Title' },
-  { key: 'client', label: 'Client' },
-  { key: 'status', label: 'Status' },
+  {
+    key: 'number',
+    label: 'Number',
+    render: (row) => <span className="font-mono text-sm text-[#071525]">{row.number}</span>,
+  },
+  { key: 'client', label: 'Client', render: (row) => row.client?.name || '—' },
+  { key: 'service', label: 'Service', render: (row) => row.service?.name || '—' },
+  { key: 'status', label: 'Status', render: (row) => QUOTATION_STATUS_LABELS[row.status] || row.status },
   { key: 'total', label: 'Total', render: (row) => formatCurrency(row.total) },
   {
     key: 'actions',
     label: '',
     render: (row) => (
-      <Link to={`/admin/quotations/${row.id}`} className="text-blue-600 hover:underline">
+      <Link to={`/admin/quotations/${row.id}`} className="text-sm font-medium text-[#071525] hover:underline">
         View
       </Link>
     ),
@@ -26,7 +32,7 @@ const COLUMNS = [
 ];
 
 function Quotations() {
-  const { quotations, loading, error, fetchList } = useQuotationsList();
+  const { list: quotations, loading, error, fetchList } = useQuotationsList();
 
   useEffect(() => {
     fetchList();
@@ -43,6 +49,7 @@ function Quotations() {
     >
       {loading && <Loading label="Loading quotations..." />}
       {error && <p className="text-sm text-red-600">{error}</p>}
+
       {!loading && !error && quotations.length === 0 && <EmptyState title="No quotations found" />}
       {!loading && !error && quotations.length > 0 && <Table columns={COLUMNS} data={quotations} />}
     </PageContainer>

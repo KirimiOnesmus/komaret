@@ -8,7 +8,7 @@ function Button({
   ...props
 }) {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    primary: 'bg-[#071525] text-white hover:bg-[#0d2036]',
     secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
     danger: 'bg-red-600 text-white hover:bg-red-700',
   };

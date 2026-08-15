@@ -7,12 +7,11 @@ import {
   FaPhoneAlt,
   FaEnvelope,
   FaClock,
-  FaPaperPlane,
 } from 'react-icons/fa';
 
 import { Link } from 'react-router-dom';
 
-import logo from '../../../assets/images/logo.png';
+import logo from '../../../assets/images/logo-dark.svg';
 import { PUBLIC_PATHS } from '../../../shared/constants/routes';
 
 const Footer = () => {

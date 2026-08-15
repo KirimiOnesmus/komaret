@@ -8,7 +8,7 @@ import ServiceCard from "../../features/services/ServiceCard";
 
 function Services() {
   const [search, setSearch] = useState("");
-
+ 
   const {
     data: services,
     loading,
@@ -23,9 +23,7 @@ function Services() {
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
 
-        {/* =====================================================
-            PAGE HEADER
-            ===================================================== */}
+     
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">
@@ -42,7 +40,7 @@ function Services() {
             </p>
           </div>
 
-          {/* Search */}
+
           <div className="w-full md:max-w-sm">
             <SearchBar
               onSearch={setSearch}
@@ -51,27 +49,21 @@ function Services() {
           </div>
         </div>
 
-        {/* =====================================================
-            LOADING
-            ===================================================== */}
+
         {loading && (
           <div className="mt-10">
             <Loading label="Loading services..." />
           </div>
         )}
 
-        {/* =====================================================
-            ERROR
-            ===================================================== */}
+
         {error && (
           <p className="mt-6 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
             {error}
           </p>
         )}
 
-        {/* =====================================================
-            EMPTY STATE
-            ===================================================== */}
+
         {!loading && !error && services.length === 0 && (
           <div className="mt-10">
             <EmptyState
@@ -81,9 +73,7 @@ function Services() {
           </div>
         )}
 
-        {/* =====================================================
-            SERVICES GRID
-            ===================================================== */}
+
         {!loading && !error && services.length > 0 && (
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (

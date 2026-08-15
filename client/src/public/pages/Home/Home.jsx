@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Button from "../../../shared/components/common/Button";
 import Loading from "../../../shared/components/common/Loading";
 import useServices from "../../../shared/hooks/useServices";
+import useProjects from "../../../shared/hooks/useProjects";
 import { ServiceCard, ProjectCard } from "../../features";
 import {HomeSlider, Testimonials} from "../../features";
 import {
@@ -22,6 +23,16 @@ function Home() {
     loading,
     error,
   } = useServices({
+    params: {
+      limit: 3,
+    },
+  });
+
+  const {
+    data: projects,
+    loading: projectsLoading,
+    error: projectsError,
+  } = useProjects({
     params: {
       limit: 3,
     },
@@ -82,13 +93,16 @@ function Home() {
             <FaLongArrowAltRight />
           </Link>
         </div>
-        {loading && <Loading label="Loading projects..." />}
-        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-        {!loading && !error && (
+        {projectsLoading && <Loading label="Loading projects..." />}
+        {projectsError && (
+          <p className="mt-4 text-sm text-red-600">{projectsError}</p>
+        )}
+        {!projectsLoading && !projectsError && (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
-              <ProjectCard key={service.slug} service={service} />
-            ))}
+            {Array.isArray(projects) &&
+              projects.map((project) => (
+                <ProjectCard key={project.slug} project={project} />
+              ))}
           </div>
         )}
       </section>

@@ -8,7 +8,7 @@ function Select({ label, id, options = [], error, className = '', ...props }) {
       )}
       <select
         id={id}
-        className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        className={`rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-blue-500 focus:border-none ${
           error ? 'border-red-500' : 'border-gray-300'
         } ${className}`}
         {...props}

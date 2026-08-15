@@ -151,7 +151,6 @@ function Contact() {
                       </div>
 
 
-                      {/* Content */}
                       <div className="min-w-0">
 
                         <h3 className="text-sm font-bold text-[#071525]">

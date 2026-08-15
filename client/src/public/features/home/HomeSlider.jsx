@@ -72,11 +72,7 @@ function HeroSlider() {
         lg:h-[620px]
       "
     >
-      {/* =====================================================
-          HERO BACKGROUND
-          The image stays fixed visually inside THIS section
-          only. It cannot continue behind the rest of the page.
-          ===================================================== */}
+
       <div className="sticky top-0 h-full w-full">
         {SLIDES.map((item, index) => (
           <div
@@ -101,17 +97,15 @@ function HeroSlider() {
               "
             />
 
-            {/* Dark overlay */}
+         
             <div className="absolute inset-0 bg-[#061525]/65" />
 
-            {/* Left-to-right gradient */}
+  
             <div className="absolute inset-0 bg-gradient-to-r from-[#061525]/95 via-[#061525]/70 to-transparent" />
           </div>
         ))}
 
-        {/* =====================================================
-            HERO CONTENT
-            ===================================================== */}
+ 
         <div className="absolute inset-0 z-20">
           <div className="mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
             <div className="max-w-xl">
@@ -200,9 +194,6 @@ function HeroSlider() {
           </div>
         </div>
 
-        {/* =====================================================
-            PREVIOUS BUTTON
-            ===================================================== */}
         <button
           type="button"
           onClick={previousSlide}
@@ -235,9 +226,6 @@ function HeroSlider() {
           <FaChevronLeft className="text-sm" />
         </button>
 
-        {/* =====================================================
-            NEXT BUTTON
-            ===================================================== */}
         <button
           type="button"
           onClick={nextSlide}
@@ -270,9 +258,7 @@ function HeroSlider() {
           <FaChevronRight className="text-sm" />
         </button>
 
-        {/* =====================================================
-            SLIDE INDICATORS
-            ===================================================== */}
+  
         <div className="absolute bottom-7 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2">
           {SLIDES.map((_, index) => (
             <button

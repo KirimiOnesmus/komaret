@@ -17,7 +17,7 @@ import NewsDetails from './pages/News/NewsDetails';
 import Contact from './pages/Contact/Contact';
 import Quote from './pages/Quote/Quote';
 
-/**All public marketing-site pages are unauthenticated by design and sit inside PublicLayout.*/
+
 
 function PublicRoutes() {
   return (
