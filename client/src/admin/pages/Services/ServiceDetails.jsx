@@ -47,7 +47,13 @@ function ServiceDetails() {
   };
 
   if (loading || !service) return <Loading label="Loading service…" />;
-  if (error) return <p className="p-6 text-sm text-red-600">{error}</p>;
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      </div>
+    );
+  }
 
   const rates = service.rates || [];
 
@@ -149,37 +155,39 @@ function ServiceDetails() {
             No rate-card items yet.
           </p>
         ) : (
-          <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Item</th>
-                  <th className="px-4 py-2 font-medium">Unit</th>
-                  <th className="px-4 py-2 font-medium">Unit price</th>
-                  <th className="px-4 py-2 font-medium">Default qty</th>
-                  <th className="px-4 py-2 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 bg-white">
-                {rates.map((r) => (
-                  <tr key={r.id}>
-                    <td className="px-4 py-2 font-medium text-[#071525]">{r.label}</td>
-                    <td className="px-4 py-2 text-gray-600">{r.unit}</td>
-                    <td className="px-4 py-2 text-gray-800">{KES.format(Number(r.unitPrice) || 0)}</td>
-                    <td className="px-4 py-2 text-gray-600">{r.defaultQty ?? '—'}</td>
-                    <td className="px-4 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          r.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
-                        }`}
-                      >
-                        {r.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
+          <div className="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3">Item</th>
+                    <th className="px-4 py-3">Unit</th>
+                    <th className="px-4 py-3">Unit price</th>
+                    <th className="px-4 py-3">Default qty</th>
+                    <th className="px-4 py-3">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {rates.map((r) => (
+                    <tr key={r.id} className="transition-colors hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-[#071525]">{r.label}</td>
+                      <td className="px-4 py-3 text-gray-600">{r.unit}</td>
+                      <td className="px-4 py-3 text-gray-800">{KES.format(Number(r.unitPrice) || 0)}</td>
+                      <td className="px-4 py-3 text-gray-600">{r.defaultQty ?? '—'}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            r.isActive ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'
+                          }`}
+                        >
+                          {r.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -190,14 +198,14 @@ function ServiceDetails() {
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <Link
             to={`/admin/projects?service=${encodeURIComponent(service.id)}`}
-            className="rounded-lg border border-gray-200 p-5 transition hover:border-[#f5b400]/60 hover:shadow-sm"
+            className="rounded-lg border border-gray-200 p-5 transition-colors hover:border-[#f5b400]/60 hover:bg-gray-50"
           >
             <p className="text-sm font-medium text-[#071525]">Projects</p>
             <p className="mt-1 text-sm text-gray-500">Projects using this service.</p>
           </Link>
           <Link
             to={`/admin/quotations?service=${encodeURIComponent(service.id)}`}
-            className="rounded-lg border border-gray-200 p-5 transition hover:border-[#f5b400]/60 hover:shadow-sm"
+            className="rounded-lg border border-gray-200 p-5 transition-colors hover:border-[#f5b400]/60 hover:bg-gray-50"
           >
             <p className="text-sm font-medium text-[#071525]">Quotations</p>
             <p className="mt-1 text-sm text-gray-500">Quotations for this service.</p>

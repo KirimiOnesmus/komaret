@@ -51,6 +51,35 @@ async function main() {
   }
 
   console.log(`Seeded ${CATEGORIES.length} service categories (${CATEGORIES.filter((c) => c.isPublished).length} published).`);
+
+  // Sample news articles — only when the table is empty, so re-seeding never
+  // clobbers or duplicates the owner's real posts. Delete these from the admin.
+  const articleCount = await prisma.article.count();
+  if (articleCount === 0) {
+    await prisma.article.createMany({
+      data: [
+        {
+          title: 'Komaret Design & Construction: Building the Future',
+          slug: 'building-the-future',
+          category: 'COMPANY_UPDATES',
+          excerpt: 'A look at our approach to delivering quality construction across Kenya.',
+          body: '<p>Welcome to our news hub. Here we share company updates, project milestones and insights from the Kenyan construction industry.</p><p>Replace this sample article from the admin console.</p>',
+          isPublished: true,
+          publishedAt: new Date(),
+        },
+        {
+          title: 'Sustainable Building Trends in Kenya',
+          slug: 'sustainable-building-trends-kenya',
+          category: 'INDUSTRY_INSIGHTS',
+          excerpt: 'How green building practices are reshaping construction in the region.',
+          body: '<p>From energy-efficient materials to smarter site management, sustainability is becoming central to modern construction.</p><p>Replace this sample article from the admin console.</p>',
+          isPublished: true,
+          publishedAt: new Date(),
+        },
+      ],
+    });
+    console.log('Seeded 2 sample news articles.');
+  }
 }
 
 main()

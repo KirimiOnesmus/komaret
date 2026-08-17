@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { NavLink, Link, Outlet } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import {
   FaThLarge,
   FaHardHat,
@@ -9,19 +9,24 @@ import {
   FaFileInvoiceDollar,
   FaClipboardList,
   FaAddressBook,
+  FaNewspaper,
   FaComments,
-  FaMoneyBillWaveAlt ,
+  FaMoneyBillWaveAlt,
   FaChartBar,
   FaCog,
   FaPlus,
   FaBars,
   FaTimes,
   FaSignOutAlt,
+  FaChevronDown,
 } from 'react-icons/fa';
 
 import useAuth from '../shared/hooks/useAuth';
 import { ADMIN_PATHS, ADMIN_ROUTE_ROLES } from '../shared/constants/routes';
 import logo from "../assets/images/logo.svg"
+
+const NAVY = '#071525';
+const GOLD = '#f5b400';
 
 const NAV_GROUPS = [
   {
@@ -40,20 +45,34 @@ const NAV_GROUPS = [
   {
     heading: 'Operations',
     items: [
+      { label: 'News', to: ADMIN_PATHS.NEWS, icon: FaNewspaper },
       { label: 'Communications', to: ADMIN_PATHS.COMMUNICATIONS, icon: FaComments },
-      { label: 'Payments', to: ADMIN_PATHS.PAYMENTS, icon: FaMoneyBillWaveAlt  },
+      { label: 'Payments', to: ADMIN_PATHS.PAYMENTS, icon: FaMoneyBillWaveAlt },
       { label: 'Reports', to: ADMIN_PATHS.REPORTS, icon: FaChartBar },
       { label: 'Settings', to: ADMIN_PATHS.SETTINGS, icon: FaCog },
     ],
   },
 ];
 
+// Flat lookup used to build the header's current-page label without
+// touching routing/functionality — purely presentational.
+const PAGE_TITLES = NAV_GROUPS.flatMap((g) => g.items).reduce((acc, item) => {
+  acc[item.to] = item.label;
+  return acc;
+}, {});
+
+function currentPageLabel(pathname) {
+  if (pathname === ADMIN_PATHS.DASHBOARD) return 'Dashboard';
+  const match = Object.keys(PAGE_TITLES)
+    .filter((path) => path !== ADMIN_PATHS.DASHBOARD && pathname.startsWith(path))
+    .sort((a, b) => b.length - a.length)[0];
+  return match ? PAGE_TITLES[match] : '';
+}
+
 function BrandTile() {
   return (
     <div className="flex items-center gap-3 px-5 py-5">
-        <img src={logo} alt="komaret logo" 
-        className='  '
-        />
+      <img src={logo} alt="Komaret logo" className="h-9 w-9 shrink-0 object-contain" />
       <div className="min-w-0 leading-tight">
         <p className="truncate text-sm font-bold text-[#071525]">Komaret</p>
         <p className="truncate text-[11px] text-gray-400">Admin console</p>
@@ -72,14 +91,14 @@ function NavItems({ onNavigate }) {
   };
 
   return (
-    <nav className="flex flex-col gap-6 px-3 pb-6">
+    <nav className="flex flex-col gap-5 px-3 py-4">
       {NAV_GROUPS.map((group, i) => {
         const items = group.items.filter((item) => canSee(item.to));
         if (items.length === 0) return null;
         return (
-          <div key={group.heading || `grp-${i}`} className="flex flex-col gap-1">
+          <div key={group.heading || `grp-${i}`} className="flex flex-col gap-0.5">
             {group.heading && (
-              <p className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
+              <p className="px-3 pb-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400">
                 {group.heading}
               </p>
             )}
@@ -92,24 +111,26 @@ function NavItems({ onNavigate }) {
                   end={item.end}
                   onClick={onNavigate}
                   className={({ isActive }) =>
-                    `group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                    `group relative flex items-center gap-3 rounded-lg py-2 pl-4 pr-3 text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-[#f5b400]/12 text-[#071525]'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-[#071525]'
+                        ? 'bg-[#f5b400]/10 text-[#071525]'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-[#071525]'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
                       <span
-                        className={`absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full bg-[#f5b400] transition-opacity ${
+                        className={`absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#f5b400] transition-opacity ${
                           isActive ? 'opacity-100' : 'opacity-0'
                         }`}
                       />
                       <Icon
-                        className={`text-[15px] ${isActive ? 'text-[#f5b400]' : 'text-gray-400 group-hover:text-[#071525]'}`}
+                        className={`shrink-0 text-[15px] ${
+                          isActive ? 'text-[#f5b400]' : 'text-gray-400 group-hover:text-[#071525]'
+                        }`}
                       />
-                      {item.label}
+                      <span className="truncate">{item.label}</span>
                     </>
                   )}
                 </NavLink>
@@ -122,22 +143,83 @@ function NavItems({ onNavigate }) {
   );
 }
 
-function AdminHeader({ onOpenMenu }) {
+function UserMenu() {
   const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
   const roleLabel = Array.isArray(user?.roles) ? user.roles[0] : user?.role;
 
+  useEffect(() => {
+    if (!open) return undefined;
+    const close = () => setOpen(false);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [open]);
+
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white/95 px-4 backdrop-blur sm:px-6">
+    <div className="relative border-l border-gray-200 pl-3">
       <button
         type="button"
-        onClick={onOpenMenu}
-        className="flex h-9 w-9 items-center justify-center rounded-md text-gray-600 hover:bg-gray-100 md:hidden"
-        aria-label="Open menu"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((o) => !o);
+        }}
+        className="flex items-center gap-2 rounded-lg py-1 pl-1 pr-2 transition-colors hover:bg-gray-50"
+        aria-label="Account menu"
+        aria-expanded={open}
       >
-        <FaBars />
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#071525] text-xs font-bold text-[#f5b400]">
+          {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
+        </span>
+        <span className="hidden text-right leading-tight sm:block">
+          <span className="block max-w-[9rem] truncate text-sm font-medium text-gray-800">
+            {user?.name || user?.email}
+          </span>
+          {roleLabel && (
+            <span className="block truncate text-[11px] capitalize text-gray-400">
+              {String(roleLabel).toLowerCase()}
+            </span>
+          )}
+        </span>
+        <FaChevronDown className={`hidden text-[10px] text-gray-400 transition-transform sm:block ${open ? 'rotate-180' : ''}`} />
       </button>
 
-      <div className="hidden md:block" />
+      {open && (
+        <div
+          className="absolute right-0 top-full z-30 mt-2 w-44 rounded-lg border border-gray-200 bg-white py-1"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            type="button"
+            onClick={logout}
+            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-red-600"
+          >
+            <FaSignOutAlt className="text-xs" /> Log out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AdminHeader({ onOpenMenu }) {
+  const location = useLocation();
+  const pageLabel = currentPageLabel(location.pathname);
+
+  return (
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
+          onClick={onOpenMenu}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-gray-600 transition-colors hover:bg-gray-100 md:hidden"
+          aria-label="Open menu"
+        >
+          <FaBars />
+        </button>
+        <p className="hidden truncate text-sm font-semibold text-[#071525] md:block">
+          {pageLabel}
+        </p>
+      </div>
 
       <div className="flex items-center gap-3">
         <Link
@@ -147,26 +229,7 @@ function AdminHeader({ onOpenMenu }) {
           <FaPlus className="text-xs" /> New project
         </Link>
 
-        <div className="flex items-center gap-2 border-l border-gray-200 pl-3">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#071525] text-xs font-bold text-[#f5b400]">
-            {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
-          </span>
-          <div className="hidden text-right leading-tight sm:block">
-            <p className="text-sm font-medium text-gray-800">{user?.name || user?.email}</p>
-            {roleLabel && (
-              <p className="text-[11px] capitalize text-gray-400">{String(roleLabel).toLowerCase()}</p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="ml-1 flex h-9 w-9 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-red-600"
-            aria-label="Log out"
-            title="Log out"
-          >
-            <FaSignOutAlt />
-          </button>
-        </div>
+        <UserMenu />
       </div>
     </header>
   );
@@ -174,17 +237,31 @@ function AdminHeader({ onOpenMenu }) {
 
 function AdminLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+
+  // Close the mobile drawer whenever the route changes.
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll while the mobile drawer is open.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileOpen]);
 
   return (
     <div className="flex min-h-screen bg-[#f6f7f9]">
-
       <aside className="hidden w-64 shrink-0 border-r border-gray-200 bg-white md:block">
-        <div className="sticky top-0 h-screen overflow-y-auto">
-          <BrandTile />
+        <div className="sticky top-0 flex h-screen flex-col overflow-y-auto">
+          <div className="border-b border-gray-100">
+            <BrandTile />
+          </div>
           <NavItems />
         </div>
       </aside>
-
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
@@ -193,13 +270,13 @@ function AdminLayout() {
             onClick={() => setMobileOpen(false)}
             aria-hidden
           />
-          <div className="absolute left-0 top-0 h-full w-64 overflow-y-auto bg-white shadow-xl">
-            <div className="flex items-center justify-between pr-3">
+          <div className="absolute left-0 top-0 flex h-full w-72 max-w-[85vw] flex-col overflow-y-auto bg-white">
+            <div className="flex items-center justify-between border-b border-gray-100 pr-3">
               <BrandTile />
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100"
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100"
                 aria-label="Close menu"
               >
                 <FaTimes />

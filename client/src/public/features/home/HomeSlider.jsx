@@ -42,6 +42,13 @@ const SLIDES = [
 
 function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [introReady, setIntroReady] = useState(false);
+
+  // Play the entrance sequence once, on first load.
+  useEffect(() => {
+    const id = window.requestAnimationFrame(() => setIntroReady(true));
+    return () => window.cancelAnimationFrame(id);
+  }, []);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
@@ -108,18 +115,20 @@ function HeroSlider() {
  
         <div className="absolute inset-0 z-20">
           <div className="mx-auto flex h-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
-            <div className="max-w-xl">
+            <div className={`max-w-xl ${introReady ? "hero-intro-ready" : ""}`}>
 
               <p
                 key={`eyebrow-${currentSlide}`}
-                className="mb-4 text-xs font-bold tracking-[0.15em] text-[#f5b400] sm:text-sm"
+                className="hero-intro-item mb-4 text-xs font-bold tracking-[0.15em] text-[#f5b400] sm:text-sm"
+                style={{ "--hero-delay": "80ms" }}
               >
                 {slide.eyebrow}
               </p>
 
               <h1
                 key={`title-${currentSlide}`}
-                className="text-4xl font-bold leading-[1.08] text-white sm:text-5xl lg:text-6xl"
+                className="hero-intro-item text-4xl font-bold leading-[1.08] text-white sm:text-5xl lg:text-6xl"
+                style={{ "--hero-delay": "200ms" }}
               >
                 {slide.title}
 
@@ -132,12 +141,16 @@ function HeroSlider() {
 
               <p
                 key={`description-${currentSlide}`}
-                className="mt-6 max-w-lg text-sm leading-6 text-gray-200 sm:text-base"
+                className="hero-intro-item mt-6 max-w-lg text-sm leading-6 text-gray-200 sm:text-base"
+                style={{ "--hero-delay": "320ms" }}
               >
                 {slide.description}
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div
+                className="hero-intro-item mt-8 flex flex-wrap gap-3"
+                style={{ "--hero-delay": "440ms" }}
+              >
                 <Link
                   to={PUBLIC_PATHS.SERVICES}
                   className="

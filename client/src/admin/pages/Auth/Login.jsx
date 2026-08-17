@@ -95,7 +95,7 @@ function Login() {
               />
             </div>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-7 shadow-xl sm:p-9">
+            <div className="rounded-xl border border-gray-200 bg-white p-7 sm:p-9">
 
               <div className="mb-8">
                 <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#f5b400]">

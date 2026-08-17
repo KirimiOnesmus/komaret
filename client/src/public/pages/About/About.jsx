@@ -14,6 +14,7 @@ import { Link } from 'react-router-dom';
 import { PUBLIC_PATHS } from '../../../shared/constants/routes';
 
 import aboutImage from '../../../assets/images/about.jpg';
+import CountUp from '../../../shared/components/common/CountUp';
 
 function About() {
   return (
@@ -299,7 +300,7 @@ function About() {
               <FaAward className="text-3xl text-[#f5b400]" />
 
               <p className="mt-4 text-3xl font-bold">
-                5+
+                <CountUp value="5+" />
               </p>
 
               <p className="mt-1 text-sm text-gray-300">
@@ -313,7 +314,7 @@ function About() {
               <FaBuilding className="text-3xl text-[#f5b400]" />
 
               <p className="mt-4 text-3xl font-bold">
-                50+
+                <CountUp value="50+" />
               </p>
 
               <p className="mt-1 text-sm text-gray-300">
@@ -327,7 +328,7 @@ function About() {
               <FaUsers className="text-3xl text-[#f5b400]" />
 
               <p className="mt-4 text-3xl font-bold">
-                50+
+                <CountUp value="50+" />
               </p>
 
               <p className="mt-1 text-sm text-gray-300">
@@ -341,7 +342,7 @@ function About() {
               <FaHandshake className="text-3xl text-[#f5b400]" />
 
               <p className="mt-4 text-3xl font-bold">
-                98%
+                <CountUp value="98%" />
               </p>
 
               <p className="mt-1 text-sm text-gray-300">
@@ -355,7 +356,7 @@ function About() {
               <FaBuilding className="text-3xl text-[#f5b400]" />
 
               <p className="mt-4 text-3xl font-bold">
-                5+
+                <CountUp value="5+" />
               </p>
 
               <p className="mt-1 text-sm text-gray-300">

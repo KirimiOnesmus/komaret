@@ -44,7 +44,7 @@ function ServiceRequests() {
       label: 'Requester',
       render: (row) => (
         <div className="min-w-0">
-          <p className="truncate font-medium text-gray-900">
+          <p className="truncate font-medium text-[#071525]">
             {row.name || '—'}
           </p>
 
@@ -112,12 +112,12 @@ function ServiceRequests() {
 
   
         {error && (
-          <p
+          <div
             role="alert"
-            className="text-sm text-red-600"
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
           >
             {error}
-          </p>
+          </div>
         )}
 
 
@@ -134,12 +134,10 @@ function ServiceRequests() {
         {!loading &&
           !error &&
           requests.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-              <Table
-                columns={columns}
-                data={requests}
-              />
-            </div>
+            <Table
+              columns={columns}
+              data={requests}
+            />
           )}
       </PageContainer>
 

@@ -83,7 +83,7 @@ function Machinery() {
 
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
               <FaCogs />
@@ -98,7 +98,7 @@ function Machinery() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-green-50 text-green-600">
               <FaTools />
@@ -116,7 +116,7 @@ function Machinery() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-gray-200 bg-white p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#f5b400]/10 text-[#f5b400]">
               <FaHardHat />
@@ -137,47 +137,43 @@ function Machinery() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-gray-200 px-5 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
-            <FaCogs />
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-[#071525]">
-              Machinery Records
-            </h3>
-
-            <p className="text-xs text-gray-500">
-              Current equipment and availability
-            </p>
-          </div>
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
+          <FaCogs />
         </div>
 
-        {loading && (
-          <div className="px-5 py-8">
-            <Loading label="Loading machinery..." />
-          </div>
-        )}
+        <div>
+          <h3 className="text-sm font-bold text-[#071525]">
+            Machinery records
+          </h3>
 
-        {error && (
-          <div className="px-5 py-8">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && machines.length === 0 && (
-          <div className="px-5 py-10">
-            <EmptyState title="No machinery found" />
-          </div>
-        )}
-
-        {!loading && !error && machines.length > 0 && (
-          <div className="overflow-x-auto">
-            <Table columns={COLUMNS} data={machines} />
-          </div>
-        )}
+          <p className="text-xs text-gray-500">
+            Current equipment and availability
+          </p>
+        </div>
       </div>
+
+      {loading && (
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-8">
+          <Loading label="Loading machinery..." />
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && machines.length === 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-10">
+          <EmptyState title="No machinery found" />
+        </div>
+      )}
+
+      {!loading && !error && machines.length > 0 && (
+        <Table columns={COLUMNS} data={machines} />
+      )}
     </PageContainer>
   );
 }

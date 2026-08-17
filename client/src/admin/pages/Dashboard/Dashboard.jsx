@@ -70,8 +70,8 @@ const QUOTATION_STATUS = {
 function ProjectStatusPill({ status }) {
   const s = PROJECT_STATUS[status] || { label: status, dot: '#6b7280' };
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-700">
-      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: s.dot }} />
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: s.dot }} />
       {s.label}
     </span>
   );
@@ -80,10 +80,10 @@ function ProjectStatusPill({ status }) {
 
 function StatTile({ icon: Icon, label, value, sub, to }) {
   const body = (
-    <div className="group h-full rounded-xl border border-gray-200 bg-white p-5 transition-all duration-200 hover:-translate-y-0.5 hover:border-[#f5b400]/50 hover:shadow-md">
-      <div className="flex items-start justify-between">
+    <div className="group h-full rounded-xl border border-gray-200 bg-white p-5 transition-colors duration-150 hover:border-[#f5b400]/60">
+      <div className="flex items-start justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#f5b400]/10 text-[#f5b400] transition-colors group-hover:bg-[#f5b400] group-hover:text-[#071525]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#f5b400]/10 text-[#f5b400] transition-colors group-hover:bg-[#f5b400] group-hover:text-[#071525]">
           <Icon />
         </span>
       </div>
@@ -92,7 +92,7 @@ function StatTile({ icon: Icon, label, value, sub, to }) {
     </div>
   );
   return to ? (
-    <Link to={to} className="block h-full">
+    <Link to={to} className="block h-full" aria-label={`${label}: ${value}`}>
       {body}
     </Link>
   ) : (
@@ -106,15 +106,21 @@ function PipelineBar({ status, count, total }) {
   const pct = total ? Math.round((count / total) * 100) : 0;
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-sm">
+      <div className="mb-1.5 flex items-center justify-between text-sm">
         <span className="flex items-center gap-2 text-gray-700">
-          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: s.dot }} />
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: s.dot }} />
           {s.label}
         </span>
-        <span className="font-semibold text-[#071525]">{count}</span>
+        <span className="flex items-baseline gap-1.5">
+          <span className="font-semibold text-[#071525]">{count}</span>
+          <span className="text-xs text-gray-400">{pct}%</span>
+        </span>
       </div>
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
-        <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: s.dot }} />
+        <div
+          className="h-full rounded-full transition-[width] duration-300"
+          style={{ width: `${pct}%`, backgroundColor: s.dot }}
+        />
       </div>
     </div>
   );
@@ -127,17 +133,24 @@ function AttentionRow({ icon: Icon, label, count, to, tone = 'default' }) {
     warn: 'text-amber-500',
     danger: 'text-red-500',
   };
+  const badgeTones = {
+    default: 'bg-[#071525]',
+    warn: 'bg-amber-500',
+    danger: 'bg-red-600',
+  };
   return (
     <Link
       to={to}
-      className="flex items-center justify-between rounded-lg px-2 py-2 transition-colors hover:bg-gray-50"
+      className="flex items-center justify-between gap-3 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-gray-50"
     >
-      <span className="flex items-center gap-3 text-sm text-gray-700">
-        <Icon className={tones[tone]} />
-        {label}
+      <span className="flex min-w-0 items-center gap-3 text-sm text-gray-700">
+        <Icon className={`shrink-0 ${tones[tone]}`} />
+        <span className="truncate">{label}</span>
       </span>
-      <span className="flex items-center gap-2">
-        <span className="min-w-[1.5rem] rounded-md bg-[#071525] px-2 py-0.5 text-center text-xs font-bold text-white">
+      <span className="flex shrink-0 items-center gap-2">
+        <span
+          className={`min-w-[1.5rem] rounded-md px-2 py-0.5 text-center text-xs font-bold text-white ${badgeTones[tone]}`}
+        >
           {count}
         </span>
         <FaArrowRight className="text-[10px] text-gray-300" />
@@ -152,12 +165,12 @@ function ResourceStat({ icon: Icon, label, value, to }) {
       to={to}
       className="flex items-center gap-3 rounded-lg border border-gray-100 p-3 transition-colors hover:border-[#f5b400]/50 hover:bg-gray-50"
     >
-      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
         <Icon className="text-sm" />
       </span>
-      <div>
+      <div className="min-w-0">
         <p className="text-lg font-bold leading-none text-[#071525]">{value}</p>
-        <p className="mt-0.5 text-xs text-gray-500">{label}</p>
+        <p className="mt-1 truncate text-xs text-gray-500">{label}</p>
       </div>
     </Link>
   );
@@ -166,8 +179,8 @@ function ResourceStat({ icon: Icon, label, value, to }) {
 function SectionCard({ title, hint, action, children }) {
   return (
     <section className="rounded-xl border border-gray-200 bg-white p-5">
-      <div className="mb-4 flex items-start justify-between">
-        <div>
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h2 className="text-sm font-bold text-[#071525]">{title}</h2>
           {hint && <p className="mt-0.5 text-xs text-gray-400">{hint}</p>}
         </div>
@@ -242,14 +255,13 @@ function Dashboard() {
   return (
     <PageContainer>
       <div className="space-y-6">
-  
+
         <section
           className="relative overflow-hidden rounded-2xl px-6 py-7 sm:px-8"
           style={{
             background: `linear-gradient(135deg, ${NAVY} 0%, #0d2036 60%, #12304f 100%)`,
           }}
         >
-
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 opacity-[0.14]"
@@ -266,12 +278,12 @@ function Dashboard() {
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#f5b400]">
                 Komaret Design &amp; Construction
               </p>
-              <h1 className="mt-2 text-2xl font-bold text-white sm:text-3xl">
+              <h1 className="mt-2 text-2xl font-bold leading-tight text-white sm:text-3xl">
                 {greeting()}
                 {user?.name ? `, ${user.name.split(' ')[0]}` : ''}
               </h1>
               <p className="mt-1 text-sm text-blue-100/80">{TODAY}</p>
-              <p className="mt-3 text-sm leading-6 text-blue-100/70">
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-blue-100/70">
                 {activeProjects} active {activeProjects === 1 ? 'project' : 'projects'},{' '}
                 {openRequests} open {openRequests === 1 ? 'request' : 'requests'} and{' '}
                 {pendingQuotations} {pendingQuotations === 1 ? 'quotation' : 'quotations'} awaiting a reply.
@@ -285,15 +297,14 @@ function Dashboard() {
                 </Link>
                 <Link
                   to={ADMIN_PATHS.QUOTATION_CREATE}
-                  className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/25 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/10"
                 >
                   <FaFileInvoiceDollar className="text-xs" /> New quotation
                 </Link>
               </div>
             </div>
 
-   
-            <div className="relative shrink-0 rounded-xl border border-white/10 bg-white/5 px-6 py-5 backdrop-blur-sm">
+            <div className="relative shrink-0 rounded-xl border border-white/15 bg-white/5 px-6 py-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-blue-100/70">
                 Accepted quotation value
               </p>
@@ -345,7 +356,7 @@ function Dashboard() {
               action={
                 <Link
                   to={ADMIN_PATHS.REPORTS}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#071525] hover:text-[#f5b400]"
+                  className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#071525] hover:text-[#f5b400]"
                 >
                   Reports <FaArrowRight className="text-[10px]" />
                 </Link>
@@ -356,7 +367,7 @@ function Dashboard() {
                   No projects yet. Create your first project to start tracking the pipeline.
                 </p>
               ) : (
-                <div className="space-y-3.5">
+                <div className="space-y-4">
                   {PROJECT_ORDER.filter((s) => (projectsByStatus[s] || 0) > 0 || s === 'ACTIVE').map(
                     (s) => (
                       <PipelineBar
@@ -369,7 +380,7 @@ function Dashboard() {
                   )}
                   {delayedProjects > 0 && (
                     <p className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
-                      <FaExclamationTriangle />
+                      <FaExclamationTriangle className="shrink-0" />
                       {delayedProjects} {delayedProjects === 1 ? 'project is' : 'projects are'} past
                       the expected end date.
                     </p>
@@ -384,7 +395,7 @@ function Dashboard() {
               action={
                 <Link
                   to={ADMIN_PATHS.PROJECTS}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#071525] hover:text-[#f5b400]"
+                  className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#071525] hover:text-[#f5b400]"
                 >
                   View all <FaArrowRight className="text-[10px]" />
                 </Link>
@@ -404,7 +415,7 @@ function Dashboard() {
                           <p className="truncate text-sm font-medium text-[#071525]">{p.name}</p>
                           <p className="mt-0.5 font-mono text-xs text-gray-400">{p.code}</p>
                         </div>
-                        <div className="hidden w-28 sm:block">
+                        <div className="hidden w-28 shrink-0 sm:block">
                           <div className="mb-1 flex justify-between text-[10px] text-gray-400">
                             <span>Progress</span>
                             <span>{p.progressPct ?? 0}%</span>
@@ -425,7 +436,7 @@ function Dashboard() {
             </SectionCard>
           </div>
 
-   
+
           <div className="space-y-6">
             <SectionCard title="Needs attention" hint="Open items across the back office">
               {attention.length === 0 ? (
@@ -434,7 +445,7 @@ function Dashboard() {
                   <p className="text-sm text-gray-500">You&apos;re all caught up.</p>
                 </div>
               ) : (
-                <div className="-mx-2 space-y-0.5">
+                <div className="-mx-2.5 space-y-0.5">
                   {attention.map((row) => (
                     <AttentionRow key={row.label} {...row} />
                   ))}

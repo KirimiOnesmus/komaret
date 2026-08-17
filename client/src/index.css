@@ -1,1 +1,42 @@
 @import "tailwindcss";
+/* ------------------------------------------------------------------ */
+/* Scroll-reveal entrance animation (see shared/hooks/useScrollReveal) */
+/* Only affects how elements ENTER — resting state is unchanged, so    */
+/* the existing design is preserved exactly.                          */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .sr-init {
+    opacity: 0;
+    transform: translateY(22px);
+    transition:
+      opacity 1.05s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 1.05s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition-delay: var(--sr-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .sr-init.sr-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero entrance sequence (first load only) — see HomeSlider.jsx       */
+/* ------------------------------------------------------------------ */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-intro-item {
+    opacity: 0;
+    transform: translateY(28px);
+    transition:
+      opacity 0.95s cubic-bezier(0.22, 0.61, 0.36, 1),
+      transform 0.95s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transition-delay: var(--hero-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .hero-intro-ready .hero-intro-item {
+    opacity: 1;
+    transform: none;
+  }
+}

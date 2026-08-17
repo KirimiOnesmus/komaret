@@ -73,7 +73,7 @@ function Labour() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-fit items-center gap-3 rounded-md border border-gray-200 bg-white px-4 shadow-sm">
+          <div className="flex h-11 w-fit items-center gap-3 rounded-md border border-gray-200 bg-white px-4">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f5b400]/10 text-[#f5b400]">
               <FaUsers />
             </div>
@@ -92,36 +92,32 @@ function Labour() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center gap-3 border-b border-gray-200 px-5 py-4">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
-            <FaHardHat />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-[#071525]">Workforce Records</h3>
-            <p className="text-xs text-gray-500">Current labour records and assignments</p>
-          </div>
+      <div className="mb-3 flex items-center gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[#071525] text-[#f5b400]">
+          <FaHardHat />
         </div>
-
-        <div className="p-0">
-          {loading && (
-            <div className="px-5 py-8">
-              <Loading label="Loading labour records..." />
-            </div>
-          )}
-          {error && (
-            <div className="px-5 py-8">
-              <p className="text-sm text-red-600">{error}</p>
-            </div>
-          )}
-          {!loading && !error && workers.length === 0 && (
-            <div className="px-5 py-10">
-              <EmptyState title="No labour records found" />
-            </div>
-          )}
-          {!loading && !error && workers.length > 0 && <Table columns={columns} data={workers} />}
+        <div>
+          <h3 className="text-sm font-bold text-[#071525]">Workforce records</h3>
+          <p className="text-xs text-gray-500">Current labour records and assignments</p>
         </div>
       </div>
+
+      {loading && (
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-8">
+          <Loading label="Loading labour records..." />
+        </div>
+      )}
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      {!loading && !error && workers.length === 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white px-5 py-10">
+          <EmptyState title="No labour records found" />
+        </div>
+      )}
+      {!loading && !error && workers.length > 0 && <Table columns={columns} data={workers} />}
     </PageContainer>
   );
 }

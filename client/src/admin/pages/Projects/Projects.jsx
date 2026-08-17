@@ -17,7 +17,7 @@ const COLUMNS = [
     label: 'Project',
     render: (row) => (
       <div>
-        <p className="font-medium text-gray-900">{row.name}</p>
+        <p className="font-medium text-[#071525]">{row.name}</p>
         <p className="font-mono text-xs text-gray-400">{row.code}</p>
       </div>
     ),
@@ -89,12 +89,16 @@ function Projects() {
         </Link>
       }
     >
-      <div className="mb-4 max-w-sm">
+      <div className="mb-5 max-w-sm">
         <SearchBar onSearch={setSearch} placeholder="Search projects..." />
       </div>
 
       {loading && <Loading label="Loading projects..." />}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {!loading && !error && filtered.length === 0 && <EmptyState title="No projects found" />}
       {!loading && !error && filtered.length > 0 && <Table columns={COLUMNS} data={filtered} />}

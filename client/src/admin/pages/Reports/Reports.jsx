@@ -30,8 +30,8 @@ const REPORT_TYPES = [
 function StatCard({ label, value }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-gray-900">{value ?? '-'}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</p>
+      <p className="mt-2 text-2xl font-bold text-[#071525]">{value ?? '-'}</p>
     </div>
   );
 }
@@ -41,7 +41,7 @@ function BreakdownList({ title, data }) {
   const max = Math.max(1, ...entries.map(([, v]) => v));
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <p className="mb-4 text-sm font-semibold text-gray-700">{title}</p>
+      <p className="mb-4 text-sm font-bold text-[#071525]">{title}</p>
       {entries.length === 0 ? (
         <p className="text-sm text-gray-400">No data for this range.</p>
       ) : (
@@ -122,7 +122,7 @@ function ProjectsReport({ data }) {
       </div>
       <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4">
-          <p className="text-sm font-semibold text-gray-700">Most recent projects</p>
+          <p className="text-sm font-bold text-[#071525]">Most recent projects</p>
         </div>
         <div className="overflow-x-auto p-5 pt-0">
           <Table columns={PROJECT_COLUMNS} data={data.recent} emptyMessage="No projects in this range." />
@@ -208,7 +208,7 @@ function PaymentsReport({ data }) {
       </div>
       <div className="mt-6 overflow-hidden rounded-lg border border-gray-200 bg-white">
         <div className="border-b border-gray-200 px-5 py-4">
-          <p className="text-sm font-semibold text-gray-700">Most recent payments</p>
+          <p className="text-sm font-bold text-[#071525]">Most recent payments</p>
         </div>
         <div className="overflow-x-auto p-5 pt-0">
           <Table columns={PAYMENT_COLUMNS} data={data.recent} emptyMessage="No payments in this range." />
@@ -369,7 +369,7 @@ function Reports() {
             <button
               type="button"
               onClick={handleClearFilter}
-              className="text-sm font-semibold text-blue-600 transition-colors hover:underline"
+              className="text-sm font-semibold text-[#071525] transition-colors hover:text-[#f5b400] hover:underline"
             >
               Clear
             </button>
@@ -378,7 +378,11 @@ function Reports() {
       )}
 
       {loading && <Loading label="Loading report..." />}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
       {!loading && !error && data && Renderer && <Renderer data={data} />}
     </PageContainer>
   );

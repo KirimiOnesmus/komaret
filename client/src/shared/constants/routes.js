@@ -54,6 +54,10 @@ export const ADMIN_PATHS = Object.freeze({
   COMMUNICATIONS: '/admin/communications',
   PAYMENTS: '/admin/payments',
 
+  NEWS: '/admin/news',
+  NEWS_CREATE: '/admin/news/new',
+  NEWS_EDIT: '/admin/news/:id/edit',
+
   REPORTS: '/admin/reports',
   SETTINGS: '/admin/settings',
 });
@@ -92,6 +96,9 @@ export const ADMIN_ROUTE_PATHS = Object.freeze({
   SERVICE_REQUESTS: 'service-requests',
   COMMUNICATIONS: 'communications',
   PAYMENTS: 'payments',
+  NEWS: 'news',
+  NEWS_CREATE: 'news/new',
+  NEWS_EDIT: 'news/:id/edit',
   REPORTS: 'reports',
   SETTINGS: 'settings',
 });

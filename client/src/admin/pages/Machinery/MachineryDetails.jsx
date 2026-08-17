@@ -45,7 +45,7 @@ function MachineryDetails() {
   if (error) {
     return (
       <PageContainer>
-        <p className="text-sm text-red-600">{error}</p>
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       </PageContainer>
     );
   }
@@ -81,7 +81,7 @@ function MachineryDetails() {
       </Link>
 
 
-      <div className="mt-6 flex flex-col gap-5 rounded-lg border border-gray-200 bg-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-6 flex flex-col gap-5 rounded-lg border border-gray-200 bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-[#071525] text-xl text-[#f5b400]">
             <FaCogs />
@@ -133,7 +133,7 @@ function MachineryDetails() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <div className="rounded-lg border border-gray-200 bg-white">
             <div className="border-b border-gray-200 px-6 py-4">
               <h2 className="text-sm font-bold text-[#071525]">
                 Machine Information
@@ -193,7 +193,7 @@ function MachineryDetails() {
 
 
         <div>
-          <div className="rounded-lg bg-[#071525] p-6 text-white shadow-sm">
+          <div className="rounded-lg bg-[#071525] p-6 text-white">
             <div className="flex h-11 w-11 items-center justify-center rounded-md bg-[#f5b400] text-[#071525]">
               <FaTools />
             </div>

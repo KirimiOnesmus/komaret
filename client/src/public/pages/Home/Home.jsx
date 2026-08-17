@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
-import Button from "../../../shared/components/common/Button";
 import Loading from "../../../shared/components/common/Loading";
+import CountUp from "../../../shared/components/common/CountUp";
 import useCategories from "../../../shared/hooks/useCategories";
 import useProjects from "../../../shared/hooks/useProjects";
 import { CategoryCard, ProjectCard } from "../../features";
@@ -139,7 +139,7 @@ function Home() {
               <div className="group">
                 <FaAward className="mb-5 text-4xl text-[#f5b400] transition-transform duration-300 group-hover:scale-110" />
 
-                <div className="text-4xl font-bold sm:text-5xl">5+</div>
+                <div className="text-4xl font-bold sm:text-5xl"><CountUp value="5+" /></div>
 
                 <p className="mt-2 text-sm font-semibold text-white">
                   Years Experience
@@ -153,7 +153,7 @@ function Home() {
               <div className="group">
                 <FaBuilding className="mb-5 text-4xl text-[#f5b400] transition-transform duration-300 group-hover:scale-110" />
 
-                <div className="text-4xl font-bold sm:text-5xl">100+</div>
+                <div className="text-4xl font-bold sm:text-5xl"><CountUp value="100+" /></div>
 
                 <p className="mt-2 text-sm font-semibold text-white">
                   Projects Completed
@@ -167,7 +167,7 @@ function Home() {
               <div className="group">
                 <FaUsers className="mb-5 text-4xl text-[#f5b400] transition-transform duration-300 group-hover:scale-110" />
 
-                <div className="text-4xl font-bold sm:text-5xl">50+</div>
+                <div className="text-4xl font-bold sm:text-5xl"><CountUp value="50+" /></div>
 
                 <p className="mt-2 text-sm font-semibold text-white">
                   Skilled Professionals
@@ -181,7 +181,7 @@ function Home() {
               <div className="group">
                 <FaHandshake className="mb-5 text-4xl text-[#f5b400] transition-transform duration-300 group-hover:scale-110" />
 
-                <div className="text-4xl font-bold sm:text-5xl">98%</div>
+                <div className="text-4xl font-bold sm:text-5xl"><CountUp value="98%" /></div>
 
                 <p className="mt-2 text-sm font-semibold text-white">
                   Client Satisfaction

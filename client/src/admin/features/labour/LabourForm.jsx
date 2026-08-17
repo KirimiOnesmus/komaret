@@ -79,8 +79,8 @@ export default function LabourForm({ mode = 'create', initialValues, submitting,
       <Input id="skill" label="Skill / specialisation (optional)" placeholder="e.g. tiling, finishing" maxLength={200} value={values.skill} onChange={set('skill')} />
 
       {/* Internal contact details — not shown on the public site */}
-      <div className="rounded-md border border-gray-200 p-4">
-        <p className="mb-1 text-sm font-medium text-gray-700">Internal details</p>
+      <div className="rounded-lg border border-gray-200 p-4">
+        <p className="mb-1 text-sm font-bold text-[#071525]">Internal details</p>
         <p className="mb-3 text-xs text-gray-400">Kept private — never shown on the public site.</p>
         <div className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">

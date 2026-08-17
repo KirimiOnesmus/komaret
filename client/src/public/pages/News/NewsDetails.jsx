@@ -11,6 +11,7 @@ import Loading from '../../../shared/components/common/Loading';
 import publicService from '../../../shared/services/publicService';
 
 import { formatDate } from '../../../shared/utils/formatters';
+import { mediaUrl } from '../../../shared/utils/mediaUrl';
 
 
 function NewsDetails() {
@@ -92,11 +93,12 @@ function NewsDetails() {
   }
 
 
-  const image =
+  const image = mediaUrl(
     article.image ||
     article.imageUrl ||
     article.featuredImage ||
-    article.coverImage;
+    article.coverImage
+  );
 
 
   const category =

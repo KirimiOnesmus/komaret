@@ -107,7 +107,7 @@ function Settings() {
 
         <section className="rounded-lg border border-gray-200 bg-white">
           <div className="border-b border-gray-200 px-6 py-4">
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-[#071525]">
               Account
             </h2>
             <p className="mt-1 text-xs text-gray-500">
@@ -120,7 +120,7 @@ function Settings() {
               <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 Name
               </p>
-              <p className="mt-1 text-sm font-medium text-gray-900">
+              <p className="mt-1 text-sm font-medium text-[#071525]">
                 {user?.name || '—'}
               </p>
             </div>
@@ -138,7 +138,7 @@ function Settings() {
               <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
                 Role
               </p>
-              <p className="mt-1 text-sm font-medium capitalize text-gray-900">
+              <p className="mt-1 text-sm font-medium capitalize text-[#071525]">
                 {user?.role || '—'}
               </p>
             </div>
@@ -148,7 +148,7 @@ function Settings() {
 
         <section className="rounded-lg border border-gray-200 bg-white lg:col-span-2">
           <div className="border-b border-gray-200 px-6 py-4">
-            <h2 className="text-sm font-semibold text-gray-900">
+            <h2 className="text-sm font-bold text-[#071525]">
               Change password
             </h2>
             <p className="mt-1 text-xs text-gray-500">
@@ -218,7 +218,7 @@ function Settings() {
                 role="alert"
                 className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3"
               >
-                <p className="text-sm text-red-600">
+                <p className="text-sm text-red-700">
                   {serverError}
                 </p>
               </div>

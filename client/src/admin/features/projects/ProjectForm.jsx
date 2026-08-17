@@ -93,8 +93,8 @@ function ProjectForm({ onSubmit, submitting = false }) {
         />
       )}
 
-      <div className="rounded-md border border-gray-200 p-4">
-        <p className="mb-3 text-sm font-medium text-gray-700">Client</p>
+      <div className="rounded-lg border border-gray-200 p-4">
+        <p className="mb-3 text-sm font-bold text-[#071525]">Client</p>
         <div className="flex flex-col gap-4">
           <Input id="clientName" label="Name" maxLength={200} value={values.clientName} onChange={set('clientName')} error={errors.clientName} required />
           <div className="grid gap-4 sm:grid-cols-2">

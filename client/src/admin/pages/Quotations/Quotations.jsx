@@ -48,7 +48,11 @@ function Quotations() {
       }
     >
       {loading && <Loading label="Loading quotations..." />}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {!loading && !error && quotations.length === 0 && <EmptyState title="No quotations found" />}
       {!loading && !error && quotations.length > 0 && <Table columns={COLUMNS} data={quotations} />}

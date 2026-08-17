@@ -5,13 +5,15 @@ import {
 } from 'react-icons/fa';
 
 import { formatDate } from '../../../shared/utils/formatters';
+import { mediaUrl } from '../../../shared/utils/mediaUrl';
 
 function NewsCard({ article }) {
-  const image =
+  const image = mediaUrl(
     article.image ||
     article.imageUrl ||
     article.featuredImage ||
-    article.coverImage;
+    article.coverImage
+  );
 
   const category =
     article.category ||

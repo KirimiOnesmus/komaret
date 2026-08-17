@@ -3,6 +3,7 @@ import { getPrisma } from '../../config/db.js';
 import { parsePagination } from '../../utils/pagination.js';
 import { ApiError } from '../../utils/ApiError.js';
 import httpStatus from '../../utils/httpStatus.js';
+import { NEWS_CATEGORY_LABELS } from '../news/news.service.js';
 
 
 function publicCategorySummary(c) {
@@ -72,6 +73,21 @@ function publicMachinery(m) {
   };
 }
 
+function publicArticleSummary(a) {
+  return {
+    id: a.id,
+    slug: a.slug,
+    title: a.title,
+    excerpt: a.excerpt,
+    category: NEWS_CATEGORY_LABELS[a.category] || a.category,
+    image: a.image,
+    publishedAt: a.publishedAt || a.createdAt,
+  };
+}
+function publicArticleDetail(a) {
+  return { ...publicArticleSummary(a), body: a.body };
+}
+
 export async function listCategories() {
   const db = getPrisma();
   const rows = await db.serviceCategory.findMany({
@@ -121,6 +137,24 @@ export async function getServiceBySlug(slug) {
   return publicServiceDetail(s);
 }
 
+
+export async function listNews(query = {}) {
+  const db = getPrisma();
+  const where = { isPublished: true };
+  if (query?.search) where.title = { contains: String(query.search).trim() };
+  const rows = await db.article.findMany({
+    where,
+    orderBy: [{ publishedAt: 'desc' }, { createdAt: 'desc' }],
+  });
+  return rows.map(publicArticleSummary);
+}
+
+export async function getNewsBySlug(slug) {
+  const db = getPrisma();
+  const a = await db.article.findFirst({ where: { slug, isPublished: true } });
+  if (!a) throw new ApiError(httpStatus.NOT_FOUND, 'Article not found', 'ARTICLE_NOT_FOUND');
+  return publicArticleDetail(a);
+}
 
 export async function listProjects(query) {
   const db = getPrisma();

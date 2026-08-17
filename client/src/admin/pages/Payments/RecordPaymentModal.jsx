@@ -87,7 +87,7 @@ export default function RecordPaymentModal({ isOpen, onClose, onSave, projects =
           <textarea id="note" rows={2} maxLength={500} value={values.note} onChange={set('note')} className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-[#071525] focus:outline-none focus:ring-1 focus:ring-[#071525]" />
         </div>
 
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+        {error && <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
         <div className="flex justify-end gap-2 pt-1">
           <Button variant="secondary" onClick={onClose} disabled={saving}>Cancel</Button>

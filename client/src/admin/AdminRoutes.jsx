@@ -35,6 +35,9 @@ import QuotationDetails from "./pages/Quotations/QuotationDetails";
 import CreateQuotation from "./pages/Quotations/CreateQuotation";
 import EditQuotation from "./pages/Quotations/EditQuotation";
 import CRM from "./pages/CRM/CRM";
+import News from "./pages/News/News";
+import CreateNews from "./pages/News/CreateNews";
+import EditNews from "./pages/News/EditNews";
 import Communications from "./pages/Communications/Communications";
 import Reports from "./pages/Reports/Reports";
 import Settings from "./pages/Settings/Settings";
@@ -122,6 +125,11 @@ function AdminRoutes() {
           />
 
           <Route path={ADMIN_ROUTE_PATHS.CRM} element={<CRM />} />
+
+          <Route path={ADMIN_ROUTE_PATHS.NEWS} element={<News />} />
+          <Route path={ADMIN_ROUTE_PATHS.NEWS_CREATE} element={<CreateNews />} />
+          <Route path={ADMIN_ROUTE_PATHS.NEWS_EDIT} element={<EditNews />} />
+
           <Route
             path={ADMIN_ROUTE_PATHS.SERVICE_REQUESTS}
             element={<ServiceRequests />}

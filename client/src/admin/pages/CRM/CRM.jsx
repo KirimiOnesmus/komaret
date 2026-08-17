@@ -66,7 +66,7 @@ function getLeadColumns(onConvert, converting) {
             type="button"
             onClick={() => onConvert(row.id)}
             disabled={converting === row.id}
-            className="text-xs font-semibold text-blue-600 transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-xs font-semibold text-[#071525] transition-colors hover:text-[#f5b400] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
             {converting === row.id ? 'Converting…' : 'Convert to client'}
           </button>
@@ -156,7 +156,7 @@ function CRM() {
 
           <div className="flex gap-3">
 
-            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f5b400]/10">
                 <FaUserTie className="text-sm text-[#f5b400]" />
@@ -175,7 +175,7 @@ function CRM() {
             </div>
 
 
-            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
 
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#071525]/5">
                 <FaUsers className="text-sm text-[#071525]" />
@@ -200,7 +200,7 @@ function CRM() {
       </div>
 
 
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
 
         <div className="border-b border-gray-200 px-5 pt-5 sm:px-6">
 

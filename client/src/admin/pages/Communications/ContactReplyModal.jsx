@@ -113,7 +113,7 @@ export default function ContactReplyModal({ message, isOpen, onClose, onSend }) 
               />
             </div>
 
-            {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
+            {error && <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
             <div className="flex justify-end gap-2 pt-1">
               <Button variant="secondary" onClick={onClose} disabled={sending}>

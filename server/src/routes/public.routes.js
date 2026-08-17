@@ -20,6 +20,10 @@ router.get('/projects/:id', controller.getProjectById);
 router.get('/machinery', controller.listMachinery);
 router.get('/machinery/:id', controller.getMachineryById);
 
+// News & insights (published articles only)
+router.get('/news', controller.listNews);
+router.get('/news/:slug', controller.getNewsBySlug);
+
 // Contact / company information
 router.get('/testimonials', controller.listTestimonials);
 router.post('/contact', contactRateLimit, controller.submitContact);

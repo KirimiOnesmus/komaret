@@ -99,7 +99,11 @@ function Services() {
       }
     >
       {loading && <Loading label="Loading services…" />}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {!loading && !error && services.length === 0 && (
         <EmptyState

@@ -12,4 +12,7 @@ export const listMachinery = asyncHandler(async (req, res) => res.json(await ser
 export const getMachineryById = asyncHandler(async (req, res) => res.json(await service.getMachineryById(req.params.id)));
 export const listTestimonials = asyncHandler(async (req, res) => res.json(await service.listTestimonials()));
 
+export const listNews = asyncHandler(async (req, res) => res.json(await service.listNews(req.query)));
+export const getNewsBySlug = asyncHandler(async (req, res) => res.json(await service.getNewsBySlug(req.params.slug)));
+
 export const submitContact = asyncHandler(async (req, res) => res.status(201).json(await service.submitContact(req.body)));

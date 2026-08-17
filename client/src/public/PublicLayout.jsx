@@ -1,7 +1,8 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
-import { useState } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { useState, useLayoutEffect } from "react";
 import { PUBLIC_PATHS } from "../shared/constants/routes";
 import useCategories from "../shared/hooks/useCategories";
+import useScrollReveal from "../shared/hooks/useScrollReveal";
 import logo from "../assets/images/logo.svg";
 import Footer from "./features/home/Footer";
 
@@ -267,6 +268,14 @@ function PublicFooter() {
 }
 
 function PublicLayout() {
+  const { pathname } = useLocation();
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  useScrollReveal();
+
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader />

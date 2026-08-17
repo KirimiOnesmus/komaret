@@ -27,8 +27,8 @@ function fmtDate(v) {
 function Fact({ label, children }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-gray-400">{label}</dt>
-      <dd className="mt-1 text-sm text-gray-900">{children}</dd>
+      <dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">{label}</dt>
+      <dd className="mt-1 text-sm text-[#071525]">{children}</dd>
     </div>
   );
 }
@@ -56,7 +56,13 @@ function ProjectDetails() {
   };
 
   if (loading && !project) return <Loading label="Loading project…" />;
-  if (error) return <p className="p-6 text-sm text-red-600">{error}</p>;
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      </div>
+    );
+  }
   if (!project) return null;
 
   return (
@@ -74,33 +80,37 @@ function ProjectDetails() {
         </div>
       }
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="font-mono text-sm text-gray-500">{project.code}</span>
-        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASS[project.status] || 'bg-gray-100 text-gray-600'}`}>
-          {PROJECT_STATUS_LABELS[project.status] || project.status}
-        </span>
-        <span className="text-sm text-gray-500">{project.progressPct ?? 0}% complete</span>
-      </div>
+      <div className="space-y-6">
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="font-mono text-sm text-gray-500">{project.code}</span>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASS[project.status] || 'bg-gray-100 text-gray-600'}`}>
+              {PROJECT_STATUS_LABELS[project.status] || project.status}
+            </span>
+            <span className="text-sm text-gray-500">{project.progressPct ?? 0}% complete</span>
+          </div>
 
-      <dl className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <Fact label="Client">{project.client?.name || '—'}</Fact>
-        <Fact label="Service">{project.service?.name || '—'}</Fact>
-        <Fact label="Budget">{project.budget != null ? formatCurrency(project.budget) : '—'}</Fact>
-        <Fact label="Location">{project.location || '—'}</Fact>
-        <Fact label="Start date">{fmtDate(project.startDate)}</Fact>
-        <Fact label="Expected end">{fmtDate(project.expectedEndDate)}</Fact>
-      </dl>
+          <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <Fact label="Client">{project.client?.name || '—'}</Fact>
+            <Fact label="Service">{project.service?.name || '—'}</Fact>
+            <Fact label="Budget">{project.budget != null ? formatCurrency(project.budget) : '—'}</Fact>
+            <Fact label="Location">{project.location || '—'}</Fact>
+            <Fact label="Start date">{fmtDate(project.startDate)}</Fact>
+            <Fact label="Expected end">{fmtDate(project.expectedEndDate)}</Fact>
+          </dl>
 
-      {project.description && (
-        <div className="mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Description</h2>
-          <p className="mt-1 max-w-3xl whitespace-pre-line text-sm leading-6 text-gray-700">{project.description}</p>
-        </div>
-      )}
+          {project.description && (
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Description</h2>
+              <p className="mt-1.5 max-w-3xl whitespace-pre-line text-sm leading-relaxed text-gray-700">{project.description}</p>
+            </div>
+          )}
+        </section>
 
-      <div className="mt-8">
-        <h2 className="mb-3 text-sm font-semibold text-gray-900">Project images</h2>
-        <ProjectImages projectId={id} images={project.images || []} onChanged={() => fetchOne(id)} />
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-bold text-[#071525]">Project images</h2>
+          <ProjectImages projectId={id} images={project.images || []} onChanged={() => fetchOne(id)} />
+        </section>
       </div>
     </PageContainer>
   );

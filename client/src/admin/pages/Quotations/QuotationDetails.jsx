@@ -28,7 +28,13 @@ function QuotationDetails() {
   const [sending, setSending] = useState(false);
 
   if (loading || !quotation) return <Loading label="Loading quotation…" />;
-  if (error) return <p className="p-6 text-sm text-red-600">{error}</p>;
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      </div>
+    );
+  }
 
   const q = quotation;
 
@@ -114,73 +120,78 @@ function QuotationDetails() {
         </div>
       }
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-mono text-xl font-bold text-[#071525]">{q.number}</h1>
-        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
-          {QUOTATION_STATUS_LABELS[q.status] || q.status}
-        </span>
-      </div>
-
-      <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div><dt className="text-xs uppercase tracking-wide text-gray-400">Client</dt><dd className="mt-1 text-sm font-medium text-[#071525]">{q.client?.name || '—'}</dd></div>
-        <div><dt className="text-xs uppercase tracking-wide text-gray-400">Service</dt><dd className="mt-1 text-sm font-medium text-[#071525]">{q.service?.name || '—'}</dd></div>
-        <div><dt className="text-xs uppercase tracking-wide text-gray-400">Valid until</dt><dd className="mt-1 text-sm text-gray-700">{validUntil || '—'}</dd></div>
-        <div className="max-w-[12rem]">
-          <Select id="status" label="Status" options={STATUS_OPTIONS} value={q.status} onChange={handleStatus} />
-        </div>
-      </dl>
-
-      {/* items */}
-      <div className="mt-8 overflow-hidden rounded-lg border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-              <tr>
-                <th className="px-4 py-2 font-medium">Description</th>
-                <th className="px-4 py-2 font-medium">Unit</th>
-                <th className="px-4 py-2 font-medium">Qty</th>
-                <th className="px-4 py-2 font-medium">Unit price</th>
-                <th className="px-4 py-2 font-medium">Line total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 bg-white">
-              {(q.items || []).length === 0 ? (
-                <tr><td colSpan={5} className="px-4 py-6 text-center text-gray-400">No line items.</td></tr>
-              ) : (
-                q.items.map((it) => (
-                  <tr key={it.id}>
-                    <td className="px-4 py-2 text-[#071525]">{it.description}</td>
-                    <td className="px-4 py-2 text-gray-600">{it.unit || '—'}</td>
-                    <td className="px-4 py-2 text-gray-600">{Number(it.quantity)}</td>
-                    <td className="px-4 py-2 text-gray-600">{formatCurrency(it.unitPrice)}</td>
-                    <td className="px-4 py-2 text-gray-800">{formatCurrency(it.lineTotal)}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-
-      <dl className="mt-4 ml-auto max-w-xs space-y-1.5 text-sm">
-        <div className="flex justify-between"><dt className="text-gray-500">Subtotal</dt><dd className="text-gray-900">{formatCurrency(q.subtotal)}</dd></div>
-        {q.discountType && q.discountType !== 'NONE' && (
-          <div className="flex justify-between">
-            <dt className="text-gray-500">Discount ({DISCOUNT_TYPE_LABELS[q.discountType]}{q.discountType === 'PERCENT' ? ` ${Number(q.discountValue)}%` : ''})</dt>
-            <dd className="text-gray-900">{q.discountType === 'PERCENT' ? `${Number(q.discountValue)}%` : formatCurrency(q.discountValue)}</dd>
+      <div className="space-y-6">
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-mono text-xl font-bold text-[#071525]">{q.number}</h1>
+            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700">
+              {QUOTATION_STATUS_LABELS[q.status] || q.status}
+            </span>
           </div>
-        )}
-        <div className="flex justify-between"><dt className="text-gray-500">VAT ({Number(q.taxRatePct)}%)</dt><dd className="text-gray-900">{formatCurrency(q.taxAmount)}</dd></div>
-        <div className="flex justify-between border-t border-gray-200 pt-1.5 text-base font-bold"><dt className="text-[#071525]">Total</dt><dd className="text-[#071525]">{formatCurrency(q.total)}</dd></div>
-      </dl>
 
-      {q.notes && (
-        <div className="mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Notes</h2>
-          <p className="mt-1 max-w-3xl whitespace-pre-line text-sm leading-6 text-gray-700">{q.notes}</p>
-        </div>
-      )}
+          <dl className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">Client</dt><dd className="mt-1 text-sm font-medium text-[#071525]">{q.client?.name || '—'}</dd></div>
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">Service</dt><dd className="mt-1 text-sm font-medium text-[#071525]">{q.service?.name || '—'}</dd></div>
+            <div><dt className="text-xs font-semibold uppercase tracking-wide text-gray-400">Valid until</dt><dd className="mt-1 text-sm text-gray-700">{validUntil || '—'}</dd></div>
+            <div className="max-w-[12rem]">
+              <Select id="status" label="Status" options={STATUS_OPTIONS} value={q.status} onChange={handleStatus} />
+            </div>
+          </dl>
+        </section>
+
+        <section className="rounded-xl border border-gray-200 bg-white p-5">
+          <h2 className="mb-4 text-sm font-bold text-[#071525]">Line items</h2>
+          <div className="overflow-hidden rounded-lg border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <tr>
+                    <th className="px-4 py-3">Description</th>
+                    <th className="px-4 py-3">Unit</th>
+                    <th className="px-4 py-3">Qty</th>
+                    <th className="px-4 py-3">Unit price</th>
+                    <th className="px-4 py-3">Line total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {(q.items || []).length === 0 ? (
+                    <tr><td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-400">No line items.</td></tr>
+                  ) : (
+                    q.items.map((it) => (
+                      <tr key={it.id} className="transition-colors hover:bg-gray-50">
+                        <td className="px-4 py-3 text-[#071525]">{it.description}</td>
+                        <td className="px-4 py-3 text-gray-600">{it.unit || '—'}</td>
+                        <td className="px-4 py-3 text-gray-600">{Number(it.quantity)}</td>
+                        <td className="px-4 py-3 text-gray-600">{formatCurrency(it.unitPrice)}</td>
+                        <td className="px-4 py-3 font-medium text-gray-800">{formatCurrency(it.lineTotal)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <dl className="mt-4 ml-auto max-w-xs space-y-1.5 text-sm">
+            <div className="flex justify-between"><dt className="text-gray-500">Subtotal</dt><dd className="text-gray-900">{formatCurrency(q.subtotal)}</dd></div>
+            {q.discountType && q.discountType !== 'NONE' && (
+              <div className="flex justify-between">
+                <dt className="text-gray-500">Discount ({DISCOUNT_TYPE_LABELS[q.discountType]}{q.discountType === 'PERCENT' ? ` ${Number(q.discountValue)}%` : ''})</dt>
+                <dd className="text-gray-900">{q.discountType === 'PERCENT' ? `${Number(q.discountValue)}%` : formatCurrency(q.discountValue)}</dd>
+              </div>
+            )}
+            <div className="flex justify-between"><dt className="text-gray-500">VAT ({Number(q.taxRatePct)}%)</dt><dd className="text-gray-900">{formatCurrency(q.taxAmount)}</dd></div>
+            <div className="flex justify-between border-t border-gray-200 pt-1.5 text-base font-bold"><dt className="text-[#071525]">Total</dt><dd className="text-[#071525]">{formatCurrency(q.total)}</dd></div>
+          </dl>
+
+          {q.notes && (
+            <div className="mt-6 border-t border-gray-100 pt-5">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Notes</h2>
+              <p className="mt-1.5 max-w-3xl whitespace-pre-line text-sm leading-relaxed text-gray-700">{q.notes}</p>
+            </div>
+          )}
+        </section>
+      </div>
     </PageContainer>
   );
 }

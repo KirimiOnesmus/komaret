@@ -154,7 +154,11 @@ function Payments() {
       </div>
 
       {loading && <Loading label="Loading…" />}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* LIST */}
       {!loading && !error && tab === 'list' && (
@@ -198,37 +202,41 @@ function Payments() {
 
           <div>
             <h2 className="mb-2 text-sm font-bold text-[#071525]">By method</h2>
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
-              <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-                <tr><th className="px-4 py-2 font-medium">Method</th><th className="px-4 py-2 font-medium">Count</th><th className="px-4 py-2 font-medium">Total</th></tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {(report.byMethod || []).map((m) => (
-                  <tr key={m.method}><td className="px-4 py-2">{m.method}</td><td className="px-4 py-2">{m.count}</td><td className="px-4 py-2">{formatCurrency(m.total)}</td></tr>
-                ))}
-                {(report.byMethod || []).length === 0 && <tr><td colSpan={3} className="px-4 py-4 text-center text-gray-400">No payments.</td></tr>}
-              </tbody>
-            </table>
+            <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <tr><th className="px-4 py-3">Method</th><th className="px-4 py-3">Count</th><th className="px-4 py-3">Total</th></tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {(report.byMethod || []).map((m) => (
+                    <tr key={m.method} className="transition-colors hover:bg-gray-50"><td className="px-4 py-3 text-gray-700">{m.method}</td><td className="px-4 py-3 text-gray-700">{m.count}</td><td className="px-4 py-3 font-medium text-[#071525]">{formatCurrency(m.total)}</td></tr>
+                  ))}
+                  {(report.byMethod || []).length === 0 && <tr><td colSpan={3} className="px-4 py-8 text-center text-sm text-gray-400">No payments.</td></tr>}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {(report.outstandingProjects || []).length > 0 && (
             <div>
               <h2 className="mb-2 text-sm font-bold text-[#071525]">Outstanding by project</h2>
-              <table className="min-w-full divide-y divide-gray-200 text-sm">
-                <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
-                  <tr><th className="px-4 py-2 font-medium">Project</th><th className="px-4 py-2 font-medium">Quoted</th><th className="px-4 py-2 font-medium">Paid</th><th className="px-4 py-2 font-medium">Outstanding</th></tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {report.outstandingProjects.map((p) => (
-                    <tr key={p.id}>
-                      <td className="px-4 py-2">{p.code ? `${p.code} — ` : ''}{p.name}</td>
-                      <td className="px-4 py-2">{formatCurrency(p.referenceAmount)}</td>
-                      <td className="px-4 py-2">{formatCurrency(p.paid)}</td>
-                      <td className="px-4 py-2 font-medium text-[#b54708]">{formatCurrency(p.outstanding)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <tr><th className="px-4 py-3">Project</th><th className="px-4 py-3">Quoted</th><th className="px-4 py-3">Paid</th><th className="px-4 py-3">Outstanding</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {report.outstandingProjects.map((p) => (
+                      <tr key={p.id} className="transition-colors hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-700">{p.code ? `${p.code} — ` : ''}{p.name}</td>
+                        <td className="px-4 py-3 text-gray-700">{formatCurrency(p.referenceAmount)}</td>
+                        <td className="px-4 py-3 text-gray-700">{formatCurrency(p.paid)}</td>
+                        <td className="px-4 py-3 font-medium text-[#b54708]">{formatCurrency(p.outstanding)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </div>

@@ -24,8 +24,6 @@ const CATEGORIES = [
   'All News',
   'Company Updates',
   'Industry Insights',
-  'Projects',
-  'Sustainability',
 ];
 
 

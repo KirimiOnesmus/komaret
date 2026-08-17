@@ -85,7 +85,7 @@ function getNotificationColumns(onRetry, retryingId) {
             type="button"
             onClick={() => onRetry(row.id)}
             disabled={retryingId === row.id}
-            className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#071525] transition-colors hover:text-[#f5b400] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
           >
             <FaRedo className="text-[10px]" />
             {retryingId === row.id ? 'Retrying…' : 'Retry'}
@@ -150,7 +150,7 @@ function getContactMessageColumns(onMarkHandled, updatingId, onTogglePublish, pu
               disabled={updatingId === row.id || (!row.isPublished && publishedCount >= 6)}
               title={!row.isPublished && publishedCount >= 6 ? 'You already have 6 published — unpublish one first' : ''}
               className={`flex items-center gap-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-                row.isPublished ? 'text-emerald-600 hover:underline' : 'text-blue-600 hover:underline'
+                row.isPublished ? 'text-emerald-600 hover:underline' : 'text-[#071525] hover:text-[#f5b400] hover:underline'
               }`}
             >
               {row.isPublished ? <FaStar className="text-[10px]" /> : <FaRegStar className="text-[10px]" />}
@@ -162,7 +162,7 @@ function getContactMessageColumns(onMarkHandled, updatingId, onTogglePublish, pu
               type="button"
               onClick={() => onMarkHandled(row.id)}
               disabled={updatingId === row.id}
-              className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 transition-colors hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-1.5 text-xs font-semibold text-[#071525] transition-colors hover:text-[#f5b400] hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
               <FaCheck className="text-[10px]" />
               {updatingId === row.id ? 'Saving…' : 'Mark handled'}
@@ -403,7 +403,11 @@ function Communications() {
       )}
 
       {loading && <Loading label={tab === 'notifications' ? 'Loading communications...' : 'Loading messages...'} />}
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {!loading && !error && rows.length === 0 && (
         <EmptyState

@@ -28,7 +28,13 @@ function EditQuotation() {
   };
 
   if (loading || !quotation) return <Loading label="Loading quotation…" />;
-  if (error) return <p className="p-6 text-sm text-red-600">{error}</p>;
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <PageContainer
